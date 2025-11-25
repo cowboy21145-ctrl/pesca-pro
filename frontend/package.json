@@ -2,6 +2,10 @@
   "name": "pesca-pro-frontend",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "dependencies": {
     "@heroicons/react": "^2.1.1",
     "axios": "^1.6.2",
