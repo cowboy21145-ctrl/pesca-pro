@@ -193,16 +193,16 @@ const PublicRegister = () => {
     <div className="min-h-screen bg-gradient-to-br from-ocean-600 via-ocean-700 to-ocean-900">
       {/* Header */}
       <div className="bg-white/10 backdrop-blur-sm border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🎣</span>
-            <span className="font-display text-xl font-bold text-white">Pesca Pro</span>
+        <div className="max-w-6xl mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-1.5 md:gap-2 touch-manipulation">
+            <span className="text-xl md:text-2xl">🎣</span>
+            <span className="font-display text-base md:text-xl font-bold text-white">Pesca Pro</span>
           </Link>
-          <div className="text-white/80 text-sm">Tournament Registration</div>
+          <div className="text-white/80 text-xs md:text-sm whitespace-nowrap">Tournament Registration</div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-3 md:px-4 py-6 md:py-8">
         {/* Tournament Info */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -220,25 +220,25 @@ const PublicRegister = () => {
             </div>
           )}
 
-          <div className="p-6 md:p-8">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-ocean-500 to-ocean-600 flex items-center justify-center flex-shrink-0">
-                <TrophyIcon className="w-8 h-8 text-white" />
+          <div className="p-4 md:p-6 lg:p-8">
+            <div className="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-ocean-500 to-ocean-600 flex items-center justify-center flex-shrink-0">
+                <TrophyIcon className="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
-              <div className="flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-3">{tournament.name}</h1>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-800 mb-2 md:mb-3 truncate">{tournament.name}</h1>
                 
                 {/* Tournament Info Grid */}
-                <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 mb-3 md:mb-4">
                   {tournament.location && (
                     <div className="flex items-center gap-2 text-slate-600">
-                      <MapPinIcon className="w-4 h-4 text-slate-400" />
-                      <span className="text-sm">{tournament.location}</span>
+                      <MapPinIcon className="w-3 h-3 md:w-4 md:h-4 text-slate-400 flex-shrink-0" />
+                      <span className="text-xs md:text-sm truncate">{tournament.location}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2 text-slate-600">
-                    <CalendarIcon className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm">
+                    <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 text-slate-400 flex-shrink-0" />
+                    <span className="text-xs md:text-sm">
                       {new Date(tournament.start_date).toLocaleDateString('en-MY', { 
                         day: 'numeric', 
                         month: 'long', 
@@ -255,8 +255,8 @@ const PublicRegister = () => {
                   </div>
                   {tournament.tournament_start_time && tournament.tournament_end_time && (
                     <div className="flex items-center gap-2 text-slate-600">
-                      <ClockIcon className="w-4 h-4 text-slate-400" />
-                      <span className="text-sm">
+                      <ClockIcon className="w-3 h-3 md:w-4 md:h-4 text-slate-400 flex-shrink-0" />
+                      <span className="text-xs md:text-sm">
                         {new Date(`2000-01-01T${tournament.tournament_start_time}`).toLocaleTimeString('en-MY', { 
                           hour: '2-digit', 
                           minute: '2-digit',

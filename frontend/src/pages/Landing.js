@@ -57,27 +57,27 @@ const Landing = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-10 px-4 sm:px-6 py-3 sm:py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <nav className="relative z-10 px-4 md:px-6 py-3 md:py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-3">
           <Link 
             to="/" 
-            className="flex items-center gap-2 sm:gap-3 flex-shrink-0 touch-manipulation"
+            className="flex items-center gap-1.5 md:gap-3 flex-shrink-0 touch-manipulation"
           >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-ocean-400 to-ocean-600 flex items-center justify-center shadow-lg shadow-ocean-500/30">
-              <span className="text-xl sm:text-2xl">🎣</span>
+            <div className="w-9 h-9 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-ocean-400 to-ocean-600 flex items-center justify-center shadow-lg shadow-ocean-500/30 flex-shrink-0">
+              <span className="text-lg md:text-2xl">🎣</span>
             </div>
-            <span className="font-display text-lg sm:text-2xl font-bold text-white whitespace-nowrap">Pesca Pro</span>
+            <span className="font-display text-base md:text-2xl font-bold text-white whitespace-nowrap">Pesca Pro</span>
           </Link>
-          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 md:gap-3 lg:gap-4 flex-shrink-0">
             <Link 
               to="/login" 
-              className="text-ocean-200 hover:text-white active:text-white transition-colors font-medium px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 min-h-[44px] flex items-center justify-center touch-manipulation text-sm sm:text-base whitespace-nowrap"
+              className="text-ocean-200 hover:text-white active:text-white transition-colors font-medium px-2 md:px-3 lg:px-4 py-2 md:py-2.5 min-h-[44px] flex items-center justify-center touch-manipulation text-xs md:text-sm lg:text-base whitespace-nowrap"
             >
               Participant Login
             </Link>
             <Link 
               to="/organizer/login" 
-              className="btn-primary text-xs sm:text-sm md:text-base px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 whitespace-nowrap"
+              className="btn-primary text-xs md:text-sm lg:text-base px-3 md:px-4 lg:px-6 py-2 md:py-2.5 lg:py-3 whitespace-nowrap"
             >
               Organizer Portal
             </Link>
@@ -112,17 +112,17 @@ const Landing = () => {
               registration management, and live leaderboards - all in one platform.
             </p>
             
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 w-full sm:w-auto">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-3 md:gap-4 w-full md:w-auto">
               <Link 
                 to="/register" 
-                className="btn-primary flex items-center justify-center gap-2 text-base sm:text-lg px-6 sm:px-8 py-4 min-h-[56px] w-full sm:w-auto"
+                className="btn-primary flex items-center justify-center gap-2 text-sm md:text-base lg:text-lg px-5 md:px-6 lg:px-8 py-3 md:py-4 min-h-[48px] md:min-h-[56px] w-full md:w-auto"
               >
                 Join as Participant
-                <ArrowRightIcon className="w-5 h-5 flex-shrink-0" />
+                <ArrowRightIcon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
               </Link>
               <Link 
                 to="/organizer/register" 
-                className="btn-secondary text-base sm:text-lg px-6 sm:px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center"
+                className="btn-secondary text-sm md:text-base lg:text-lg px-5 md:px-6 lg:px-8 py-3 md:py-4 min-h-[48px] md:min-h-[56px] w-full md:w-auto flex items-center justify-center"
               >
                 Create Tournament
               </Link>
@@ -264,16 +264,16 @@ const Landing = () => {
             <p className="text-slate-300 text-lg mb-8">
               Join thousands of organizers who trust Pesca Pro for their fishing events.
             </p>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 w-full sm:w-auto">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-center gap-3 md:gap-4 w-full md:w-auto">
               <Link 
                 to="/organizer/register" 
-                className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-4 min-h-[56px] w-full sm:w-auto flex items-center justify-center"
+                className="btn-primary text-sm md:text-base lg:text-lg px-5 md:px-6 lg:px-8 py-3 md:py-4 min-h-[48px] md:min-h-[56px] w-full md:w-auto flex items-center justify-center"
               >
                 Start Free Trial
               </Link>
               <Link 
                 to="/login" 
-                className="text-ocean-300 hover:text-white transition-colors font-medium px-4 py-3 min-h-[44px] flex items-center justify-center touch-manipulation text-center"
+                className="text-ocean-300 hover:text-white transition-colors font-medium px-3 md:px-4 py-2.5 md:py-3 min-h-[44px] flex items-center justify-center touch-manipulation text-center text-xs md:text-sm"
               >
                 Already have an account? Sign in
               </Link>

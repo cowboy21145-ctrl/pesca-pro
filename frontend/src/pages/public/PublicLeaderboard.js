@@ -83,38 +83,38 @@ const PublicLeaderboard = () => {
 
       {/* Header */}
       <div className="relative z-10 bg-white/10 backdrop-blur-sm border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🎣</span>
-            <span className="font-display text-xl font-bold text-white">Pesca Pro</span>
+        <div className="max-w-4xl mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-1.5 md:gap-2 touch-manipulation">
+            <span className="text-xl md:text-2xl">🎣</span>
+            <span className="font-display text-base md:text-xl font-bold text-white">Pesca Pro</span>
           </Link>
-          <div className="text-white/80 text-sm">Live Leaderboard</div>
+          <div className="text-white/80 text-xs md:text-sm whitespace-nowrap">Live Leaderboard</div>
         </div>
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-4 py-8">
+      <div className="relative z-10 max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-8">
         {/* Tournament Info */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-fish-400 to-fish-500 flex items-center justify-center shadow-lg shadow-fish-500/30">
-            <TrophyIcon className="w-10 h-10 text-white" />
+          <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-3 md:mb-4 rounded-xl md:rounded-2xl bg-gradient-to-br from-fish-400 to-fish-500 flex items-center justify-center shadow-lg shadow-fish-500/30">
+            <TrophyIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
           </div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-2">
+          <h1 className="font-display text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 px-2">
             {tournament.name}
           </h1>
-          <div className="flex items-center justify-center gap-4 text-white/60">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 text-white/60 text-xs md:text-sm px-2">
             {tournament.location && (
               <span className="flex items-center gap-1">
-                <MapPinIcon className="w-4 h-4" />
-                {tournament.location}
+                <MapPinIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                <span className="truncate">{tournament.location}</span>
               </span>
             )}
             <span className="flex items-center gap-1">
-              <CalendarIcon className="w-4 h-4" />
-              {new Date(tournament.start_date).toLocaleDateString()} - {new Date(tournament.end_date).toLocaleDateString()}
+              <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+              <span className="whitespace-nowrap">{new Date(tournament.start_date).toLocaleDateString()} - {new Date(tournament.end_date).toLocaleDateString()}</span>
             </span>
           </div>
           <div className="mt-4">
@@ -142,17 +142,17 @@ const PublicLeaderboard = () => {
                   transition={{ delay: 0.3 }}
                   className="text-center"
                 >
-                  <div className="w-20 h-20 mx-auto mb-2 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center shadow-lg">
-                    <UserIcon className="w-10 h-10 text-white" />
+                  <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-2 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center shadow-lg">
+                    <UserIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
                   </div>
-                  <p className="text-2xl mb-1">🥈</p>
-                  <p className="text-white font-semibold truncate max-w-[100px]">
+                  <p className="text-xl md:text-2xl mb-1">🥈</p>
+                  <p className="text-white font-semibold truncate max-w-[80px] md:max-w-[100px] text-xs md:text-sm">
                     {tournament.leaderboard[1]?.full_name}
                   </p>
-                  <p className="text-white/60 text-sm">
+                  <p className="text-white/60 text-xs md:text-sm">
                     {parseFloat(tournament.leaderboard[1]?.total_weight || 0).toFixed(2)} kg
                   </p>
-                  <div className="h-20 w-24 bg-gradient-to-b from-slate-400/30 to-slate-400/10 rounded-t-lg mt-2" />
+                  <div className="h-16 md:h-20 w-20 md:w-24 bg-gradient-to-b from-slate-400/30 to-slate-400/10 rounded-t-lg mt-2" />
                 </motion.div>
 
                 {/* 1st Place */}
@@ -162,17 +162,17 @@ const PublicLeaderboard = () => {
                   transition={{ delay: 0.2 }}
                   className="text-center"
                 >
-                  <div className="w-24 h-24 mx-auto mb-2 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-lg shadow-yellow-500/30 ring-4 ring-yellow-300/30">
-                    <UserIcon className="w-12 h-12 text-white" />
+                  <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-2 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center shadow-lg shadow-yellow-500/30 ring-2 md:ring-4 ring-yellow-300/30">
+                    <UserIcon className="w-10 h-10 md:w-12 md:h-12 text-white" />
                   </div>
-                  <p className="text-3xl mb-1">🥇</p>
-                  <p className="text-white font-bold text-lg truncate max-w-[120px]">
+                  <p className="text-2xl md:text-3xl mb-1">🥇</p>
+                  <p className="text-white font-bold text-sm md:text-lg truncate max-w-[100px] md:max-w-[120px]">
                     {tournament.leaderboard[0]?.full_name}
                   </p>
-                  <p className="text-white/60">
+                  <p className="text-white/60 text-xs md:text-sm">
                     {parseFloat(tournament.leaderboard[0]?.total_weight || 0).toFixed(2)} kg
                   </p>
-                  <div className="h-28 w-28 bg-gradient-to-b from-yellow-500/30 to-yellow-500/10 rounded-t-lg mt-2" />
+                  <div className="h-20 md:h-28 w-20 md:w-28 bg-gradient-to-b from-yellow-500/30 to-yellow-500/10 rounded-t-lg mt-2" />
                 </motion.div>
 
                 {/* 3rd Place */}
@@ -182,17 +182,17 @@ const PublicLeaderboard = () => {
                   transition={{ delay: 0.4 }}
                   className="text-center"
                 >
-                  <div className="w-20 h-20 mx-auto mb-2 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center shadow-lg">
-                    <UserIcon className="w-10 h-10 text-white" />
+                  <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-2 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center shadow-lg">
+                    <UserIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
                   </div>
-                  <p className="text-2xl mb-1">🥉</p>
-                  <p className="text-white font-semibold truncate max-w-[100px]">
+                  <p className="text-xl md:text-2xl mb-1">🥉</p>
+                  <p className="text-white font-semibold truncate max-w-[80px] md:max-w-[100px] text-xs md:text-sm">
                     {tournament.leaderboard[2]?.full_name}
                   </p>
-                  <p className="text-white/60 text-sm">
+                  <p className="text-white/60 text-xs md:text-sm">
                     {parseFloat(tournament.leaderboard[2]?.total_weight || 0).toFixed(2)} kg
                   </p>
-                  <div className="h-16 w-24 bg-gradient-to-b from-amber-600/30 to-amber-600/10 rounded-t-lg mt-2" />
+                  <div className="h-14 md:h-16 w-20 md:w-24 bg-gradient-to-b from-amber-600/30 to-amber-600/10 rounded-t-lg mt-2" />
                 </motion.div>
               </div>
             </div>
@@ -210,11 +210,11 @@ const PublicLeaderboard = () => {
               <table className="w-full">
                 <thead className="bg-white/5">
                   <tr>
-                    <th className="text-left px-6 py-4 text-white/60 font-medium text-sm">#</th>
-                    <th className="text-left px-6 py-4 text-white/60 font-medium text-sm">Participant</th>
-                    <th className="text-center px-6 py-4 text-white/60 font-medium text-sm">Catches</th>
-                    <th className="text-center px-6 py-4 text-white/60 font-medium text-sm">Biggest</th>
-                    <th className="text-right px-6 py-4 text-white/60 font-medium text-sm">Total Weight</th>
+                    <th className="text-left px-2 md:px-4 lg:px-6 py-3 md:py-4 text-white/60 font-medium text-xs md:text-sm">#</th>
+                    <th className="text-left px-2 md:px-4 lg:px-6 py-3 md:py-4 text-white/60 font-medium text-xs md:text-sm">Participant</th>
+                    <th className="text-center px-2 md:px-4 lg:px-6 py-3 md:py-4 text-white/60 font-medium text-xs md:text-sm">Catches</th>
+                    <th className="text-center px-2 md:px-4 lg:px-6 py-3 md:py-4 text-white/60 font-medium text-xs md:text-sm">Biggest</th>
+                    <th className="text-right px-2 md:px-4 lg:px-6 py-3 md:py-4 text-white/60 font-medium text-xs md:text-sm">Total Weight</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10">
@@ -226,29 +226,29 @@ const PublicLeaderboard = () => {
                       transition={{ delay: 0.1 * index }}
                       className="hover:bg-white/5 transition-colors"
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-2 md:px-4 lg:px-6 py-3 md:py-4">
                         {getMedalEmoji(index + 1) || (
-                          <span className="text-white/40">{index + 1}</span>
+                          <span className="text-white/40 text-xs md:text-sm">{index + 1}</span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getMedalColor(index + 1)} flex items-center justify-center`}>
-                            <span className="text-white font-bold text-sm">
+                      <td className="px-2 md:px-4 lg:px-6 py-3 md:py-4">
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br ${getMedalColor(index + 1)} flex items-center justify-center flex-shrink-0`}>
+                            <span className="text-white font-bold text-xs md:text-sm">
                               {entry.full_name?.charAt(0)}
                             </span>
                           </div>
-                          <span className="text-white font-medium">{entry.full_name}</span>
+                          <span className="text-white font-medium text-xs md:text-sm truncate">{entry.full_name}</span>
                         </div>
                       </td>
-                      <td className="text-center px-6 py-4 text-white/80">
+                      <td className="text-center px-2 md:px-4 lg:px-6 py-3 md:py-4 text-white/80 text-xs md:text-sm">
                         {entry.total_catches}
                       </td>
-                      <td className="text-center px-6 py-4 text-white/80">
+                      <td className="text-center px-2 md:px-4 lg:px-6 py-3 md:py-4 text-white/80 text-xs md:text-sm">
                         {parseFloat(entry.biggest_catch || 0).toFixed(2)} kg
                       </td>
-                      <td className="text-right px-6 py-4">
-                        <span className="text-white font-bold">
+                      <td className="text-right px-2 md:px-4 lg:px-6 py-3 md:py-4">
+                        <span className="text-white font-bold text-xs md:text-sm">
                           {parseFloat(entry.total_weight || 0).toFixed(2)} kg
                         </span>
                       </td>

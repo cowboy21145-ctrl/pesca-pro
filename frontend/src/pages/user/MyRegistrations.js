@@ -47,22 +47,22 @@ const MyRegistrations = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">My Registrations</h1>
-          <p className="text-slate-500">View and manage your tournament registrations</p>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-800">My Registrations</h1>
+          <p className="text-xs md:text-sm text-slate-500 mt-1">View and manage your tournament registrations</p>
         </div>
         
         {/* Filter */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {['all', 'pending', 'confirmed', 'rejected'].map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
-              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+              className={`px-3 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-colors min-h-[44px] touch-manipulation ${
                 filter === status
                   ? 'bg-ocean-600 text-white'
-                  : 'bg-white text-slate-600 hover:bg-slate-100'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 active:bg-slate-200'
               }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -108,46 +108,47 @@ const MyRegistrations = () => {
                 className="card p-6 block hover:shadow-xl transition-all group"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-ocean-100 to-ocean-50 flex items-center justify-center flex-shrink-0">
-                      <TrophyIcon className="w-8 h-8 text-ocean-600" />
+                  <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-ocean-100 to-ocean-50 flex items-center justify-center flex-shrink-0">
+                      <TrophyIcon className="w-6 h-6 md:w-8 md:h-8 text-ocean-600" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg text-slate-800 group-hover:text-ocean-600 transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-base md:text-lg text-slate-800 group-hover:text-ocean-600 transition-colors truncate">
                         {registration.tournament_name}
                       </h3>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-slate-500">
+                      <div className="flex flex-wrap items-center gap-x-2 md:gap-x-4 gap-y-1 mt-1 md:mt-2 text-xs md:text-sm text-slate-500">
                         <span className="flex items-center gap-1">
-                          <MapPinIcon className="w-4 h-4" />
-                          {registration.location || 'TBA'}
+                          <MapPinIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                          <span className="truncate">{registration.location || 'TBA'}</span>
                         </span>
+                        <span className="hidden sm:inline">•</span>
                         <span className="flex items-center gap-1">
-                          <CalendarIcon className="w-4 h-4" />
-                          {new Date(registration.start_date).toLocaleDateString()} - {new Date(registration.end_date).toLocaleDateString()}
+                          <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                          <span className="whitespace-nowrap">{new Date(registration.start_date).toLocaleDateString()} - {new Date(registration.end_date).toLocaleDateString()}</span>
                         </span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-4 md:gap-6">
-                    <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="flex items-center gap-3 md:gap-4 lg:gap-6 flex-shrink-0">
+                    <div className="grid grid-cols-3 gap-2 md:gap-4 text-center">
                       <div>
-                        <p className="text-lg font-bold text-slate-800">{registration.area_count}</p>
+                        <p className="text-base md:text-lg font-bold text-slate-800">{registration.area_count}</p>
                         <p className="text-xs text-slate-500">Areas</p>
                       </div>
                       <div>
-                        <p className="text-lg font-bold text-slate-800">{registration.catch_count || 0}</p>
+                        <p className="text-base md:text-lg font-bold text-slate-800">{registration.catch_count || 0}</p>
                         <p className="text-xs text-slate-500">Catches</p>
                       </div>
                       <div>
-                        <p className="text-lg font-bold text-slate-800">{parseFloat(registration.total_weight || 0).toFixed(1)}</p>
+                        <p className="text-base md:text-lg font-bold text-slate-800">{parseFloat(registration.total_weight || 0).toFixed(1)}</p>
                         <p className="text-xs text-slate-500">kg</p>
                       </div>
                     </div>
-                    <span className={getStatusBadge(registration.status)}>
+                    <span className={`${getStatusBadge(registration.status)} text-xs md:text-sm whitespace-nowrap`}>
                       {registration.status}
                     </span>
-                    <ArrowRightIcon className="w-5 h-5 text-slate-400 group-hover:text-ocean-600 transition-colors hidden md:block" />
+                    <ArrowRightIcon className="w-4 h-4 md:w-5 md:h-5 text-slate-400 group-hover:text-ocean-600 transition-colors hidden md:block flex-shrink-0" />
                   </div>
                 </div>
 

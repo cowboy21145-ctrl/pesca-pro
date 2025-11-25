@@ -58,36 +58,36 @@ const OrganizerDashboard = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-6 lg:space-y-8">
       {/* Welcome Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 text-white"
+        className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 text-white"
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-forest-500/20 flex items-center justify-center">
-              <span className="text-3xl">🏆</span>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+          <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-forest-500/20 flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl md:text-3xl">🏆</span>
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold truncate">
                 Welcome, {user?.name}!
               </h1>
-              <p className="text-slate-400 mt-1">
+              <p className="text-slate-400 mt-1 text-xs md:text-sm lg:text-base">
                 Manage your fishing tournaments from one place
               </p>
             </div>
           </div>
-          <Link to="/organizer/tournaments/create" className="btn-success flex items-center justify-center gap-2 w-full sm:w-auto">
-            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+          <Link to="/organizer/tournaments/create" className="btn-success flex items-center justify-center gap-2 w-full md:w-auto flex-shrink-0">
+            <PlusIcon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
             <span className="whitespace-nowrap">Create Tournament</span>
           </Link>
         </div>
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {[
           { icon: TrophyIcon, label: 'Total Tournaments', value: stats.total, color: 'ocean' },
           { icon: ClockIcon, label: 'Active', value: stats.active, color: 'fish' },
@@ -99,13 +99,13 @@ const OrganizerDashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="card p-4 sm:p-6"
+            className="card p-4 md:p-6"
           >
-            <div className={`w-12 h-12 rounded-xl bg-${stat.color}-100 flex items-center justify-center mb-4`}>
-              <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
+            <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl bg-${stat.color}-100 flex items-center justify-center mb-3 md:mb-4 flex-shrink-0`}>
+              <stat.icon className={`w-5 h-5 md:w-6 md:h-6 text-${stat.color}-600`} />
             </div>
-            <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
-            <p className="text-slate-500 text-sm">{stat.label}</p>
+            <p className="text-xl md:text-2xl font-bold text-slate-800">{stat.value}</p>
+            <p className="text-slate-500 text-xs md:text-sm">{stat.label}</p>
           </motion.div>
         ))}
       </div>
@@ -116,10 +116,12 @@ const OrganizerDashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-slate-800">Recent Tournaments</h2>
-          <Link to="/organizer/tournaments" className="text-ocean-600 hover:text-ocean-700 font-medium flex items-center gap-1">
-            View All <ArrowRightIcon className="w-4 h-4" />
+        <div className="flex items-center justify-between mb-4 md:mb-6 gap-3">
+          <h2 className="text-lg md:text-xl font-bold text-slate-800">Recent Tournaments</h2>
+          <Link to="/organizer/tournaments" className="text-ocean-600 hover:text-ocean-700 font-medium flex items-center gap-1 text-xs md:text-sm lg:text-base touch-manipulation min-h-[44px] px-2">
+            <span className="hidden md:inline">View All</span>
+            <span className="md:hidden">All</span>
+            <ArrowRightIcon className="w-4 h-4 flex-shrink-0" />
           </Link>
         </div>
 
@@ -147,34 +149,34 @@ const OrganizerDashboard = () => {
               <Link
                 key={tournament.tournament_id}
                 to={`/organizer/tournaments/${tournament.tournament_id}`}
-                className="card p-6 hover:shadow-xl transition-all group"
+                className="card p-4 md:p-6 hover:shadow-xl transition-all group"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-forest-100 to-forest-50 flex items-center justify-center">
-                      <TrophyIcon className="w-7 h-7 text-forest-600" />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
+                  <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-forest-100 to-forest-50 flex items-center justify-center flex-shrink-0">
+                      <TrophyIcon className="w-5 h-5 md:w-7 md:h-7 text-forest-600" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-800 group-hover:text-forest-600 transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-slate-800 group-hover:text-forest-600 transition-colors text-sm md:text-base truncate">
                         {tournament.name}
                       </h3>
-                      <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-1 text-xs md:text-sm text-slate-500">
                         <span className="flex items-center gap-1">
-                          <CalendarIcon className="w-4 h-4" />
-                          {new Date(tournament.start_date).toLocaleDateString()}
+                          <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                          <span className="whitespace-nowrap">{new Date(tournament.start_date).toLocaleDateString()}</span>
                         </span>
-                        <span>•</span>
-                        <span>{tournament.participant_count || 0} participants</span>
-                        <span>•</span>
-                        <span>{tournament.pond_count || 0} ponds</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="whitespace-nowrap">{tournament.participant_count || 0} participants</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="whitespace-nowrap">{tournament.pond_count || 0} ponds</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className={getStatusBadge(tournament.status)}>
+                  <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 w-full sm:w-auto">
+                    <span className={`${getStatusBadge(tournament.status)} text-xs md:text-sm whitespace-nowrap`}>
                       {tournament.status}
                     </span>
-                    <ArrowRightIcon className="w-5 h-5 text-slate-400 group-hover:text-forest-600 transition-colors" />
+                    <ArrowRightIcon className="w-4 h-4 md:w-5 md:h-5 text-slate-400 group-hover:text-forest-600 transition-colors flex-shrink-0" />
                   </div>
                 </div>
               </Link>
@@ -188,16 +190,16 @@ const OrganizerDashboard = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="grid md:grid-cols-3 gap-4"
+        className="grid md:grid-cols-3 gap-3 sm:gap-4"
       >
-        <Link to="/organizer/tournaments/create" className="card p-6 hover:shadow-xl transition-all group">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-forest-100 flex items-center justify-center group-hover:bg-forest-200 transition-colors">
-              <PlusIcon className="w-6 h-6 text-forest-600" />
+        <Link to="/organizer/tournaments/create" className="card p-4 sm:p-6 hover:shadow-xl transition-all group">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-forest-100 flex items-center justify-center group-hover:bg-forest-200 transition-colors flex-shrink-0">
+              <PlusIcon className="w-5 h-5 sm:w-6 sm:h-6 text-forest-600" />
             </div>
-            <div>
-              <h3 className="font-semibold text-slate-800">New Tournament</h3>
-              <p className="text-sm text-slate-500">Create a new fishing event</p>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-slate-800 text-sm sm:text-base">New Tournament</h3>
+              <p className="text-xs sm:text-sm text-slate-500">Create a new fishing event</p>
             </div>
           </div>
         </Link>

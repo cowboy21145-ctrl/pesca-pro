@@ -87,50 +87,51 @@ const ConfirmationModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-md bg-white rounded-xl md:rounded-2xl shadow-2xl overflow-hidden mx-4"
           >
             {/* Close Button */}
             <button
               onClick={onClose}
               disabled={loading}
-              className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50"
+              className="absolute top-3 md:top-4 right-3 md:right-4 p-1.5 md:p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+              aria-label="Close"
             >
-              <XMarkIcon className="w-5 h-5" />
+              <XMarkIcon className="w-4 h-4 md:w-5 md:h-5" />
             </button>
 
             {/* Content */}
-            <div className="p-6 pt-8">
+            <div className="p-4 md:p-6 pt-8 md:pt-8">
               {/* Icon */}
-              <div className="flex justify-center mb-4">
-                <div className={`w-16 h-16 rounded-full ${colors.bg} flex items-center justify-center`}>
-                  <Icon className={`w-8 h-8 ${colors.icon}`} />
+              <div className="flex justify-center mb-3 md:mb-4">
+                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full ${colors.bg} flex items-center justify-center`}>
+                  <Icon className={`w-7 h-7 md:w-8 md:h-8 ${colors.icon}`} />
                 </div>
               </div>
 
               {/* Title */}
-              <h3 className="text-xl font-semibold text-slate-800 text-center mb-2">
+              <h3 className="text-lg md:text-xl font-semibold text-slate-800 text-center mb-2">
                 {title}
               </h3>
 
               {/* Message */}
-              <p className="text-slate-600 text-center leading-relaxed">
+              <p className="text-sm md:text-base text-slate-600 text-center leading-relaxed">
                 {message}
               </p>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 p-6 pt-2 bg-slate-50/50">
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 p-4 md:p-6 pt-2 bg-slate-50/50">
               <button
                 onClick={onClose}
                 disabled={loading}
-                className="flex-1 px-4 py-3 rounded-xl font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2.5 md:py-3 rounded-xl font-medium text-sm md:text-base text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] touch-manipulation"
               >
                 {cancelText}
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={loading}
-                className={`flex-1 px-4 py-3 rounded-xl font-medium text-white ${colors.button} transition-all focus:ring-2 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                className={`flex-1 px-4 py-2.5 md:py-3 rounded-xl font-medium text-sm md:text-base text-white ${colors.button} transition-all focus:ring-2 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[44px] touch-manipulation`}
               >
                 {loading ? (
                   <>

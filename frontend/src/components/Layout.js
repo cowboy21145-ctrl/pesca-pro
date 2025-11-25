@@ -65,26 +65,26 @@ const Layout = ({ role }) => {
         flex flex-col
       `}>
         {/* Logo */}
-        <div className="flex-shrink-0 p-4 sm:p-6 border-b border-slate-100">
-          <Link to={role === 'organizer' ? '/organizer' : '/user'} className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-ocean-500 to-ocean-600 flex items-center justify-center shadow-lg shadow-ocean-500/30">
-              <span className="text-2xl">🎣</span>
+        <div className="flex-shrink-0 p-4 md:p-6 border-b border-slate-100">
+          <Link to={role === 'organizer' ? '/organizer' : '/user'} className="flex items-center gap-2 md:gap-3 touch-manipulation">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-ocean-500 to-ocean-600 flex items-center justify-center shadow-lg shadow-ocean-500/30 flex-shrink-0">
+              <span className="text-xl md:text-2xl">🎣</span>
             </div>
-            <div>
-              <h1 className="font-display text-xl font-bold text-slate-800">Pesca Pro</h1>
-              <p className="text-xs text-slate-500">{role === 'organizer' ? 'Organizer' : 'Participant'}</p>
+            <div className="min-w-0">
+              <h1 className="font-display text-base md:text-xl font-bold text-slate-800 truncate">Pesca Pro</h1>
+              <p className="text-xs text-slate-500 truncate">{role === 'organizer' ? 'Organizer' : 'Participant'}</p>
             </div>
           </Link>
         </div>
 
         {/* User info */}
-        <div className="flex-shrink-0 p-3 sm:p-4 mx-3 sm:mx-4 mt-3 sm:mt-4 rounded-xl bg-gradient-to-r from-ocean-50 to-forest-50 border border-ocean-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-ocean-400 to-ocean-600 flex items-center justify-center text-white font-semibold">
+        <div className="flex-shrink-0 p-3 md:p-4 mx-3 md:mx-4 mt-3 md:mt-4 rounded-xl bg-gradient-to-r from-ocean-50 to-forest-50 border border-ocean-100">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-ocean-400 to-ocean-600 flex items-center justify-center text-white font-semibold text-sm md:text-base flex-shrink-0">
               {user?.full_name?.[0] || user?.name?.[0] || 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-slate-800 truncate text-sm">
+              <p className="font-semibold text-slate-800 truncate text-xs md:text-sm">
                 {user?.full_name || user?.name}
               </p>
               <p className="text-xs text-slate-500 truncate">
@@ -95,7 +95,7 @@ const Layout = ({ role }) => {
         </div>
 
         {/* Navigation - Scrollable */}
-        <nav className="flex-1 min-h-0 p-3 sm:p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 min-h-0 p-3 md:p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             // Exact match for the path
             const isExactMatch = location.pathname === item.path;
@@ -120,25 +120,25 @@ const Layout = ({ role }) => {
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 className={`
-                  flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-medium transition-all duration-200 text-sm sm:text-base
+                  flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-xl font-medium transition-all duration-200 text-sm md:text-base min-h-[44px] touch-manipulation
                   ${isActive 
                     ? 'bg-gradient-to-r from-ocean-500 to-ocean-600 text-white shadow-lg shadow-ocean-500/30' 
-                    : 'text-slate-600 hover:bg-slate-100'
+                    : 'text-slate-600 hover:bg-slate-100 active:bg-slate-200'
                   }
                 `}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
-                <span>{item.name}</span>
+                <span className="truncate">{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
         {/* Logout - Fixed at bottom */}
-        <div className="flex-shrink-0 p-3 sm:p-4 border-t border-slate-100 bg-white">
+        <div className="flex-shrink-0 p-3 md:p-4 border-t border-slate-100 bg-white">
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="flex items-center gap-3 w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 text-sm sm:text-base min-h-[44px]"
+            className="flex items-center gap-2 md:gap-3 w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 active:bg-red-100 transition-all duration-200 text-sm md:text-base min-h-[44px] touch-manipulation"
           >
             <ArrowRightOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
             <span>Logout</span>
@@ -162,28 +162,29 @@ const Layout = ({ role }) => {
       <div className="lg:pl-72">
         {/* Mobile header */}
         <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-slate-100 lg:hidden">
-          <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center justify-between px-3 md:px-4 py-2.5 md:py-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+              aria-label="Open menu"
             >
-              <Bars3Icon className="w-6 h-6 text-slate-600" />
+              <Bars3Icon className="w-5 h-5 md:w-6 md:h-6 text-slate-600" />
             </button>
             <Link 
               to={role === 'organizer' ? '/organizer' : '/user'} 
-              className="flex items-center gap-2"
+              className="flex items-center gap-1.5 md:gap-2 touch-manipulation"
             >
-              <span className="text-xl">🎣</span>
-              <span className="font-display font-bold text-slate-800">Pesca Pro</span>
+              <span className="text-lg md:text-xl">🎣</span>
+              <span className="font-display font-bold text-slate-800 text-sm md:text-base">Pesca Pro</span>
             </Link>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-ocean-400 to-ocean-600 flex items-center justify-center text-white font-semibold text-sm">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-ocean-400 to-ocean-600 flex items-center justify-center text-white font-semibold text-xs md:text-sm flex-shrink-0">
               {user?.full_name?.[0] || user?.name?.[0] || 'U'}
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="p-3 sm:p-4 lg:p-8">
+        <main className="p-3 md:p-4 lg:p-6 xl:p-8">
           <Outlet />
         </main>
       </div>

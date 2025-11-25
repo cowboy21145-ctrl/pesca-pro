@@ -79,13 +79,13 @@ const TournamentCreate = () => {
   };
 
   return (
-    <div className="min-h-full -m-4 sm:-m-6 lg:-m-8">
+    <div className="min-h-full -m-3 md:-m-4 lg:-m-6 xl:-m-8">
       {/* Full Page Container */}
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-ocean-50/30 to-forest-50/30">
         {/* Header Section */}
         <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-6 xl:px-8 py-3 md:py-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => navigate('/organizer/tournaments')}
@@ -94,13 +94,13 @@ const TournamentCreate = () => {
                   <ArrowLeftIcon className="w-5 h-5" />
                 </button>
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Create New Tournament</h1>
-                  <p className="text-slate-500 text-sm sm:text-base">
+                  <h1 className="text-xl md:text-2xl font-bold text-slate-800">Create New Tournament</h1>
+                  <p className="text-slate-500 text-xs md:text-sm lg:text-base">
                     Set up your fishing tournament details
                   </p>
                 </div>
               </div>
-              <div className="hidden sm:flex items-center gap-2 text-sm text-forest-600 bg-forest-50 px-4 py-2 rounded-full">
+              <div className="hidden md:flex items-center gap-2 text-xs md:text-sm text-forest-600 bg-forest-50 px-3 md:px-4 py-2 rounded-full">
                 <SparklesIcon className="w-4 h-4" />
                 <span>New Tournament</span>
               </div>
@@ -109,7 +109,7 @@ const TournamentCreate = () => {
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+        <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-6 xl:px-8 py-4 md:py-6 lg:py-8 xl:py-10">
           <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Form Section - Takes 2 columns on large screens */}
             <motion.form
@@ -120,7 +120,7 @@ const TournamentCreate = () => {
               className="lg:col-span-2 space-y-6"
             >
               {/* Banner Image Card */}
-              <div className="card p-4 sm:p-6">
+              <div className="card p-4 md:p-6">
                 <label className="block text-sm font-semibold text-slate-700 mb-3">
                   Tournament Banner
                   <span className="text-slate-400 font-normal ml-2">(Optional)</span>
@@ -138,7 +138,7 @@ const TournamentCreate = () => {
                     <img
                       src={preview}
                       alt="Preview"
-                      className="w-full aspect-[21/9] sm:aspect-[3/1] object-cover rounded-xl"
+                      className="w-full aspect-[21/9] md:aspect-[3/1] object-cover rounded-xl"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
                       <button
@@ -154,13 +154,13 @@ const TournamentCreate = () => {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full aspect-[21/9] sm:aspect-[3/1] border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center hover:border-forest-500 hover:bg-forest-50/50 transition-all duration-300 group"
+                    className="w-full aspect-[21/9] md:aspect-[3/1] border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center hover:border-forest-500 hover:bg-forest-50/50 transition-all duration-300 group min-h-[200px] touch-manipulation"
                   >
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-100 group-hover:bg-forest-100 flex items-center justify-center mb-3 transition-colors">
                       <PhotoIcon className="w-8 h-8 sm:w-10 sm:h-10 text-slate-400 group-hover:text-forest-500 transition-colors" />
                     </div>
-                    <p className="text-slate-600 font-medium text-sm sm:text-base">Click to upload banner</p>
-                    <p className="text-slate-400 text-xs sm:text-sm mt-1">Recommended: 1200 x 400 pixels</p>
+                    <p className="text-slate-600 font-medium text-xs md:text-sm lg:text-base">Click to upload banner</p>
+                    <p className="text-slate-400 text-xs md:text-sm mt-1">Recommended: 1200 x 400 pixels</p>
                   </button>
                 )}
               </div>
@@ -212,7 +212,7 @@ const TournamentCreate = () => {
                   <label className="block text-sm font-semibold text-slate-700 mb-3">
                     Tournament Dates <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">
                         Start Date
@@ -251,7 +251,7 @@ const TournamentCreate = () => {
                   <label className="block text-sm font-semibold text-slate-700 mb-3">
                     Tournament Times
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">
                         Start Time
@@ -288,7 +288,7 @@ const TournamentCreate = () => {
                   <label className="block text-sm font-semibold text-slate-700 mb-3">
                     Registration Period
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1">
                         Registration Start
@@ -335,7 +335,7 @@ const TournamentCreate = () => {
               </div>
 
               {/* Submit Buttons - Mobile */}
-              <div className="lg:hidden flex flex-col sm:flex-row gap-3">
+              <div className="lg:hidden flex flex-col md:flex-row gap-3">
                 <button
                   type="button"
                   onClick={() => navigate('/organizer/tournaments')}

@@ -42,7 +42,12 @@ const TournamentDetail = () => {
   const fetchTournament = async () => {
     try {
       const response = await tournamentAPI.getById(id);
-      setTournament(response.data);
+      const tournamentData = response.data;
+      // Ensure links are present (they should be generated on creation)
+      if (!tournamentData.registration_link || !tournamentData.leaderboard_link) {
+        console.warn('Tournament missing links:', tournamentData);
+      }
+      setTournament(tournamentData);
     } catch (error) {
       toast.error('Failed to load tournament');
       navigate('/organizer/tournaments');
@@ -155,18 +160,23 @@ const TournamentDetail = () => {
 
   if (!tournament) return null;
 
-  const registrationUrl = `${window.location.origin}/t/${tournament.registration_link}`;
-  const leaderboardUrl = `${window.location.origin}/lb/${tournament.leaderboard_link}`;
+  // Generate URLs only if links exist
+  const registrationUrl = tournament.registration_link 
+    ? `${window.location.origin}/t/${tournament.registration_link}`
+    : '';
+  const leaderboardUrl = tournament.leaderboard_link 
+    ? `${window.location.origin}/lb/${tournament.leaderboard_link}`
+    : '';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Back Button */}
       <button
         onClick={() => navigate('/organizer/tournaments')}
-        className="flex items-center gap-2 text-slate-600 hover:text-forest-600 transition-colors"
+        className="flex items-center gap-2 text-slate-600 hover:text-forest-600 transition-colors min-h-[44px] px-2 -ml-2 rounded-lg hover:bg-slate-50 active:bg-slate-100"
       >
-        <ArrowLeftIcon className="w-5 h-5" />
-        <span>Back to Tournaments</span>
+        <ArrowLeftIcon className="w-5 h-5 flex-shrink-0" />
+        <span className="text-sm md:text-base">Back to Tournaments</span>
       </button>
 
       {/* Header */}
@@ -187,37 +197,49 @@ const TournamentDetail = () => {
                   {tournament.status}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-slate-400">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-slate-400 text-sm">
                 <span className="flex items-center gap-1">
-                  <MapPinIcon className="w-4 h-4" />
-                  {tournament.location || 'Location TBA'}
+                  <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{tournament.location || 'Location TBA'}</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <CalendarIcon className="w-4 h-4" />
-                  {new Date(tournament.start_date).toLocaleDateString()} - {new Date(tournament.end_date).toLocaleDateString()}
+                  <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+                  <span className="whitespace-nowrap">{new Date(tournament.start_date).toLocaleDateString()} - {new Date(tournament.end_date).toLocaleDateString()}</span>
                 </span>
               </div>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {tournament.status === 'draft' && (
-              <button onClick={() => setShowActivateModal(true)} className="btn-success flex items-center justify-center gap-1.5">
-                <PlayIcon className="w-4 h-4" />
+              <button 
+                onClick={() => setShowActivateModal(true)} 
+                className="btn-success flex items-center justify-center gap-1.5 min-h-[44px] text-sm md:text-base"
+              >
+                <PlayIcon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
                 <span>Activate</span>
               </button>
             )}
             {tournament.status === 'active' && (
-              <button onClick={() => setShowCompleteModal(true)} className="btn-primary flex items-center justify-center gap-1.5">
-                <CheckIcon className="w-4 h-4" />
+              <button 
+                onClick={() => setShowCompleteModal(true)} 
+                className="btn-primary flex items-center justify-center gap-1.5 min-h-[44px] text-sm md:text-base"
+              >
+                <CheckIcon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
                 <span>Complete</span>
               </button>
             )}
-            <Link to={`/organizer/tournaments/${id}/edit`} className="btn-secondary flex items-center justify-center gap-1.5">
-              <PencilIcon className="w-4 h-4" />
+            <Link 
+              to={`/organizer/tournaments/${id}/edit`} 
+              className="btn-secondary flex items-center justify-center gap-1.5 min-h-[44px] text-sm md:text-base"
+            >
+              <PencilIcon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
               <span>Edit</span>
             </Link>
-            <button onClick={() => setShowDeleteModal(true)} className="btn-danger flex items-center justify-center gap-1.5">
-              <TrashIcon className="w-4 h-4" />
+            <button 
+              onClick={() => setShowDeleteModal(true)} 
+              className="btn-danger flex items-center justify-center gap-1.5 min-h-[44px] text-sm md:text-base"
+            >
+              <TrashIcon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
               <span>Delete</span>
             </button>
           </div>
@@ -226,7 +248,7 @@ const TournamentDetail = () => {
 
       <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Quick Links */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -234,43 +256,93 @@ const TournamentDetail = () => {
             transition={{ delay: 0.1 }}
             className="card p-4 sm:p-6"
           >
-            <h2 className="font-semibold text-lg text-slate-800 mb-4">Share Links</h2>
-            <div className="space-y-4">
+            <h2 className="font-semibold text-base md:text-lg text-slate-800 mb-3 md:mb-4">Share Links</h2>
+            <div className="space-y-4 md:space-y-5">
               <div>
-                <label className="text-sm text-slate-500 mb-1 block">Registration Link</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={registrationUrl}
-                    readOnly
-                    className="input-field text-xs sm:text-sm bg-slate-50 flex-1 min-w-0"
-                  />
-                  <button
-                    onClick={() => copyToClipboard(registrationUrl, 'Registration link')}
-                    className="btn-secondary py-2 px-3 sm:px-4 flex-shrink-0"
-                    aria-label="Copy registration link"
-                  >
-                    <ClipboardIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </div>
+                <label className="text-xs md:text-sm text-slate-700 mb-2 block font-semibold">Registration Link</label>
+                {registrationUrl ? (
+                  <>
+                    <div className="flex flex-col md:flex-row gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <input
+                          type="text"
+                          value={registrationUrl}
+                          readOnly
+                          className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-white border-2 border-slate-300 rounded-xl text-xs md:text-sm font-mono text-slate-800 min-h-[44px] focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 transition-all"
+                          style={{ 
+                            overflowX: 'auto',
+                            whiteSpace: 'nowrap',
+                            cursor: 'text',
+                            WebkitOverflowScrolling: 'touch'
+                          }}
+                          onClick={(e) => {
+                            e.target.select();
+                            e.target.focus();
+                          }}
+                          onFocus={(e) => e.target.select()}
+                        />
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(registrationUrl, 'Registration link')}
+                        className="btn-secondary py-2.5 px-4 md:px-5 flex-shrink-0 min-h-[44px] w-full md:w-auto flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                        aria-label="Copy registration link"
+                      >
+                        <ClipboardIcon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                        <span className="text-xs md:text-sm font-medium whitespace-nowrap">Copy</span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-500 break-all px-1 leading-relaxed">{registrationUrl}</p>
+                  </>
+                ) : (
+                  <div className="p-4 md:p-5 bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl">
+                    <p className="text-xs md:text-sm text-slate-500 text-center">
+                      Link will be generated when tournament is activated
+                    </p>
+                  </div>
+                )}
               </div>
               <div>
-                <label className="text-sm text-slate-500 mb-1 block">Leaderboard Link</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={leaderboardUrl}
-                    readOnly
-                    className="input-field text-xs sm:text-sm bg-slate-50 flex-1 min-w-0"
-                  />
-                  <button
-                    onClick={() => copyToClipboard(leaderboardUrl, 'Leaderboard link')}
-                    className="btn-secondary py-2 px-3 sm:px-4 flex-shrink-0"
-                    aria-label="Copy leaderboard link"
-                  >
-                    <ClipboardIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </div>
+                <label className="text-xs md:text-sm text-slate-700 mb-2 block font-semibold">Leaderboard Link</label>
+                {leaderboardUrl ? (
+                  <>
+                    <div className="flex flex-col md:flex-row gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <input
+                          type="text"
+                          value={leaderboardUrl}
+                          readOnly
+                          className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-white border-2 border-slate-300 rounded-xl text-xs md:text-sm font-mono text-slate-800 min-h-[44px] focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 transition-all"
+                          style={{ 
+                            overflowX: 'auto',
+                            whiteSpace: 'nowrap',
+                            cursor: 'text',
+                            WebkitOverflowScrolling: 'touch'
+                          }}
+                          onClick={(e) => {
+                            e.target.select();
+                            e.target.focus();
+                          }}
+                          onFocus={(e) => e.target.select()}
+                        />
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(leaderboardUrl, 'Leaderboard link')}
+                        className="btn-secondary py-2.5 px-4 md:px-5 flex-shrink-0 min-h-[44px] w-full md:w-auto flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                        aria-label="Copy leaderboard link"
+                      >
+                        <ClipboardIcon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+                        <span className="text-xs md:text-sm font-medium whitespace-nowrap">Copy</span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-500 break-all px-1 leading-relaxed">{leaderboardUrl}</p>
+                  </>
+                ) : (
+                  <div className="p-4 md:p-5 bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl">
+                    <p className="text-xs md:text-sm text-slate-500 text-center">
+                      Link will be generated when tournament is activated
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -323,7 +395,7 @@ const TournamentDetail = () => {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Quick Actions */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

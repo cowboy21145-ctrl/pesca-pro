@@ -178,32 +178,32 @@ const UserRegister = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
                   Password
                 </label>
                 <div className="relative">
-                  <LockClosedIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <LockClosedIcon className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400 flex-shrink-0" />
                   <input
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="input-field pl-12"
+                    className="input-field pl-10 md:pl-12 text-sm md:text-base"
                     placeholder="••••••"
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
                   Confirm
                 </label>
                 <input
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="input-field"
+                  className="input-field text-sm md:text-base"
                   placeholder="••••••"
                   required
                 />

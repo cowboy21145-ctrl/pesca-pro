@@ -118,46 +118,46 @@ const TournamentList = () => {
             >
               <Link
                 to={`/organizer/tournaments/${tournament.tournament_id}`}
-                className="card p-6 block hover:shadow-xl transition-all group h-full"
+                className="card p-4 md:p-6 block hover:shadow-xl transition-all group h-full"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-forest-100 to-forest-50 flex items-center justify-center">
-                    <TrophyIcon className="w-7 h-7 text-forest-600" />
+                <div className="flex items-start justify-between mb-3 md:mb-4">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-forest-100 to-forest-50 flex items-center justify-center flex-shrink-0">
+                    <TrophyIcon className="w-6 h-6 md:w-7 md:h-7 text-forest-600" />
                   </div>
-                  <span className={getStatusBadge(tournament.status)}>
+                  <span className={`${getStatusBadge(tournament.status)} text-xs md:text-sm whitespace-nowrap`}>
                     {tournament.status}
                   </span>
                 </div>
                 
-                <h3 className="font-semibold text-lg text-slate-800 group-hover:text-forest-600 transition-colors mb-2">
+                <h3 className="font-semibold text-base md:text-lg text-slate-800 group-hover:text-forest-600 transition-colors mb-2 truncate">
                   {tournament.name}
                 </h3>
                 
-                <div className="space-y-2 text-sm text-slate-500 mb-4">
+                <div className="space-y-2 text-xs md:text-sm text-slate-500 mb-3 md:mb-4">
                   <div className="flex items-center gap-2">
-                    <MapPinIcon className="w-4 h-4" />
-                    <span>{tournament.location || 'Location TBA'}</span>
+                    <MapPinIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                    <span className="truncate">{tournament.location || 'Location TBA'}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CalendarIcon className="w-4 h-4" />
-                    <span>
+                    <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                    <span className="whitespace-nowrap">
                       {new Date(tournament.start_date).toLocaleDateString()} - {new Date(tournament.end_date).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-slate-100">
+                  <div className="flex items-center gap-3 md:gap-4">
                     <div className="text-center">
-                      <p className="font-bold text-slate-800">{tournament.participant_count || 0}</p>
+                      <p className="font-bold text-slate-800 text-sm md:text-base">{tournament.participant_count || 0}</p>
                       <p className="text-xs text-slate-500">Participants</p>
                     </div>
                     <div className="text-center">
-                      <p className="font-bold text-slate-800">{tournament.pond_count || 0}</p>
+                      <p className="font-bold text-slate-800 text-sm md:text-base">{tournament.pond_count || 0}</p>
                       <p className="text-xs text-slate-500">Ponds</p>
                     </div>
                   </div>
-                  <ArrowRightIcon className="w-5 h-5 text-slate-400 group-hover:text-forest-600 transition-colors" />
+                  <ArrowRightIcon className="w-4 h-4 md:w-5 md:h-5 text-slate-400 group-hover:text-forest-600 transition-colors flex-shrink-0" />
                 </div>
               </Link>
             </motion.div>

@@ -87,40 +87,40 @@ const RegistrationDetail = () => {
       {/* Back Button */}
       <button
         onClick={() => navigate('/user/registrations')}
-        className="flex items-center gap-2 text-slate-600 hover:text-ocean-600 transition-colors"
+        className="flex items-center gap-2 text-slate-600 hover:text-ocean-600 transition-colors min-h-[44px] px-2 -ml-2 rounded-lg hover:bg-slate-50 active:bg-slate-100 touch-manipulation"
       >
-        <ArrowLeftIcon className="w-5 h-5" />
-        <span>Back to Registrations</span>
+        <ArrowLeftIcon className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+        <span className="text-sm md:text-base">Back to Registrations</span>
       </button>
 
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`bg-gradient-to-r ${getStatusColor(registration.status)} rounded-3xl p-8 text-white`}
+        className={`bg-gradient-to-r ${getStatusColor(registration.status)} rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 text-white`}
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
-              <TrophyIcon className="w-8 h-8" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+          <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+              <TrophyIcon className="w-6 h-6 md:w-8 md:h-8" />
             </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">{registration.tournament_name}</h1>
-              <div className="flex items-center gap-4 mt-2 text-white/80">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold truncate">{registration.tournament_name}</h1>
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-2 text-white/80 text-xs md:text-sm">
                 <span className="flex items-center gap-1">
-                  <MapPinIcon className="w-4 h-4" />
-                  {registration.location || 'TBA'}
+                  <MapPinIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                  <span className="truncate">{registration.location || 'TBA'}</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <CalendarIcon className="w-4 h-4" />
-                  {new Date(registration.start_date).toLocaleDateString()}
+                  <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                  <span className="whitespace-nowrap">{new Date(registration.start_date).toLocaleDateString()}</span>
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/20">
+          <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-lg md:rounded-xl bg-white/20 flex-shrink-0">
             {getStatusIcon(registration.status)}
-            <span className="font-semibold capitalize">{registration.status}</span>
+            <span className="font-semibold capitalize text-sm md:text-base">{registration.status}</span>
           </div>
         </div>
       </motion.div>

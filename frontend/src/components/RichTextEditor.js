@@ -110,42 +110,46 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description..." 
   return (
     <div className="space-y-2">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+      <div className="flex flex-wrap items-center gap-1.5 md:gap-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
         <button
           type="button"
           onClick={formatBold}
-          className="p-2 hover:bg-slate-200 rounded transition-colors"
+          className="p-2 hover:bg-slate-200 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
           title="Bold"
+          aria-label="Bold"
         >
           <BoldIcon className="w-4 h-4 text-slate-600" />
         </button>
         <button
           type="button"
           onClick={formatItalic}
-          className="p-2 hover:bg-slate-200 rounded transition-colors"
+          className="p-2 hover:bg-slate-200 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
           title="Italic"
+          aria-label="Italic"
         >
           <ItalicIcon className="w-4 h-4 text-slate-600" />
         </button>
-        <div className="w-px h-6 bg-slate-300" />
+        <div className="w-px h-6 bg-slate-300 hidden sm:block" />
         <button
           type="button"
           onClick={formatBullet}
-          className="p-2 hover:bg-slate-200 rounded transition-colors"
+          className="p-2 hover:bg-slate-200 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
           title="Bullet List"
+          aria-label="Bullet List"
         >
           <ListBulletIcon className="w-4 h-4 text-slate-600" />
         </button>
         <button
           type="button"
           onClick={formatNumbered}
-          className="p-2 hover:bg-slate-200 rounded transition-colors"
+          className="p-2 hover:bg-slate-200 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
           title="Numbered List"
+          aria-label="Numbered List"
         >
           <NumberedListIcon className="w-4 h-4 text-slate-600" />
         </button>
-        <div className="flex-1" />
-        <p className="text-xs text-slate-500">
+        <div className="flex-1 hidden md:block" />
+        <p className="text-xs text-slate-500 hidden md:block">
           Use <strong>**bold**</strong>, <em>*italic*</em>, or <strong>-</strong> for lists
         </p>
       </div>
@@ -155,7 +159,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description..." 
         ref={textareaRef}
         value={value}
         onChange={onChange}
-        className="input-field min-h-[140px] sm:min-h-[160px] text-base resize-y font-mono"
+        className="input-field min-h-[140px] md:min-h-[160px] text-sm md:text-base resize-y font-mono"
         placeholder={placeholder}
       />
     </div>

@@ -60,18 +60,18 @@ const UserLogin = () => {
         animate={{ opacity: 1, y: 0 }}
         className="relative w-full max-w-md"
       >
-        <div className="bg-white rounded-3xl shadow-2xl p-8">
+        <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <Link to="/" className="inline-flex items-center gap-2 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-ocean-500 to-ocean-600 flex items-center justify-center shadow-lg">
-                <span className="text-2xl">🎣</span>
+          <div className="text-center mb-6 md:mb-8">
+            <Link to="/" className="inline-flex items-center gap-2 mb-4 md:mb-6 touch-manipulation">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-ocean-500 to-ocean-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                <span className="text-xl md:text-2xl">🎣</span>
               </div>
             </Link>
-            <h1 className="font-display text-3xl font-bold text-slate-800 mb-2">
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-slate-800 mb-2">
               Welcome Back
             </h1>
-            <p className="text-slate-500">
+            <p className="text-sm md:text-base text-slate-500">
               Sign in to access your tournaments
             </p>
           </div>
@@ -91,16 +91,16 @@ const UserLogin = () => {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
                 Mobile Number
               </label>
               <div className="relative">
-                <PhoneIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <PhoneIcon className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400 flex-shrink-0" />
                 <input
                   type="tel"
                   value={formData.mobile_no}
                   onChange={(e) => setFormData({ ...formData, mobile_no: e.target.value })}
-                  className="input-field pl-12"
+                  className="input-field pl-10 md:pl-12 text-sm md:text-base"
                   placeholder="08123456789"
                   required
                 />
@@ -108,16 +108,16 @@ const UserLogin = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">
                 Password
               </label>
               <div className="relative">
-                <LockClosedIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <LockClosedIcon className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400 flex-shrink-0" />
                 <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="input-field pl-12"
+                  className="input-field pl-10 md:pl-12 text-sm md:text-base"
                   placeholder="••••••••"
                   required
                 />
@@ -141,16 +141,16 @@ const UserLogin = () => {
           </form>
 
           {/* Footer */}
-          <div className="mt-8 text-center">
-            <p className="text-slate-500">
+          <div className="mt-6 md:mt-8 text-center">
+            <p className="text-xs md:text-sm text-slate-500">
               Don't have an account?{' '}
-              <Link to="/register" className="text-ocean-600 font-semibold hover:text-ocean-700">
+              <Link to="/register" className="text-ocean-600 font-semibold hover:text-ocean-700 touch-manipulation">
                 Register
               </Link>
             </p>
-            <p className="text-slate-400 text-sm mt-4">
+            <p className="text-xs text-slate-400 mt-3 md:mt-4">
               Are you an organizer?{' '}
-              <Link to="/organizer/login" className="text-ocean-600 hover:text-ocean-700">
+              <Link to="/organizer/login" className="text-ocean-600 hover:text-ocean-700 touch-manipulation">
                 Sign in here
               </Link>
             </p>

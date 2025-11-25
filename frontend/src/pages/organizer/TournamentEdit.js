@@ -209,7 +209,7 @@ const TournamentEdit = () => {
           <label className="block text-sm font-semibold text-slate-700 mb-3">
             Tournament Dates <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">
                 Start Date
@@ -248,7 +248,7 @@ const TournamentEdit = () => {
           <label className="block text-sm font-semibold text-slate-700 mb-3">
             Tournament Times
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">
                 Start Time
@@ -285,7 +285,7 @@ const TournamentEdit = () => {
           <label className="block text-sm font-semibold text-slate-700 mb-3">
             Registration Period
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-slate-600 mb-1">
                 Registration Start
