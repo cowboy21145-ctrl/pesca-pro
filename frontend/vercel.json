@@ -1,7 +1,7 @@
 {
-  "buildCommand": "CI=false npm run build",
+  "buildCommand": "chmod +x node_modules/.bin/react-scripts && npm run build",
+  "installCommand": "npm ci",
   "outputDirectory": "build",
-  "installCommand": "npm install --legacy-peer-deps",
   "framework": "create-react-app"
 }
 

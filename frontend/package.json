@@ -18,7 +18,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "CI=false npx react-scripts build",
+    "postinstall": "chmod +x node_modules/.bin/* || true",
+    "build": "chmod +x node_modules/.bin/react-scripts && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -40,4 +41,3 @@
     "tailwindcss": "^3.4.0"
   }
 }
-
