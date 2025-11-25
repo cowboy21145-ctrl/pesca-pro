@@ -6,9 +6,83 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-// CORS configuration - supports Railway deployment and local development
+// CORS configuration - supports multiple origins (local, Vercel, etc.)
+const getAllowedOrigins = () => {
+  const origins = ['http://localhost:3000']; // Always allow localhost for development
+  
+  // Add environment variable origins
+  if (process.env.FRONTEND_URL) {
+    const frontendUrls = process.env.FRONTEND_URL
+      .split(',')
+      .map(url => url.trim())
+      .filter(url => {
+        // Validate URL format and remove trailing slashes
+        try {
+          const cleanUrl = url.replace(/\/+$/, ''); // Remove trailing slashes
+          new URL(cleanUrl); // Validate URL format
+          return cleanUrl.length > 0;
+        } catch {
+          return false; // Skip invalid URLs
+        }
+      })
+      .map(url => url.replace(/\/+$/, '')); // Remove trailing slashes
+    origins.push(...frontendUrls);
+  }
+  if (process.env.CLIENT_URL) {
+    const clientUrls = process.env.CLIENT_URL
+      .split(',')
+      .map(url => url.trim())
+      .filter(url => {
+        try {
+          const cleanUrl = url.replace(/\/+$/, '');
+          new URL(cleanUrl);
+          return cleanUrl.length > 0;
+        } catch {
+          return false;
+        }
+      })
+      .map(url => url.replace(/\/+$/, ''));
+    origins.push(...clientUrls);
+  }
+  
+  // Allow all Vercel preview URLs (wildcard pattern)
+  if (process.env.NODE_ENV === 'production') {
+    origins.push(/^https:\/\/pesca-pro.*\.vercel\.app$/);
+  }
+  
+  return origins;
+};
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    // Clean the origin (remove trailing slashes)
+    const cleanOrigin = origin.replace(/\/+$/, '');
+    
+    const allowedOrigins = getAllowedOrigins();
+    
+    // Check if origin matches any allowed origin
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(cleanOrigin);
+      }
+      // Compare cleaned URLs
+      const cleanAllowed = allowedOrigin.replace(/\/+$/, '');
+      return cleanAllowed === cleanOrigin;
+    });
+    
+    if (isAllowed) {
+      // Return the cleaned origin to avoid invalid characters in header
+      callback(null, cleanOrigin);
+    } else {
+      console.warn(`CORS blocked origin: ${cleanOrigin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };

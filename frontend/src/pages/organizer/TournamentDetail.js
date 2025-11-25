@@ -173,7 +173,7 @@ const TournamentDetail = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl p-8 text-white"
+        className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 text-white"
       >
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -199,32 +199,32 @@ const TournamentDetail = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {tournament.status === 'draft' && (
-              <button onClick={() => setShowActivateModal(true)} className="btn-success text-sm flex items-center gap-1">
+              <button onClick={() => setShowActivateModal(true)} className="btn-success flex items-center justify-center gap-1.5">
                 <PlayIcon className="w-4 h-4" />
-                Activate
+                <span>Activate</span>
               </button>
             )}
             {tournament.status === 'active' && (
-              <button onClick={() => setShowCompleteModal(true)} className="btn-primary text-sm flex items-center gap-1">
+              <button onClick={() => setShowCompleteModal(true)} className="btn-primary flex items-center justify-center gap-1.5">
                 <CheckIcon className="w-4 h-4" />
-                Complete
+                <span>Complete</span>
               </button>
             )}
-            <Link to={`/organizer/tournaments/${id}/edit`} className="btn-secondary text-sm flex items-center gap-1">
+            <Link to={`/organizer/tournaments/${id}/edit`} className="btn-secondary flex items-center justify-center gap-1.5">
               <PencilIcon className="w-4 h-4" />
-              Edit
+              <span>Edit</span>
             </Link>
-            <button onClick={() => setShowDeleteModal(true)} className="btn-danger text-sm flex items-center gap-1">
+            <button onClick={() => setShowDeleteModal(true)} className="btn-danger flex items-center justify-center gap-1.5">
               <TrashIcon className="w-4 h-4" />
-              Delete
+              <span>Delete</span>
             </button>
           </div>
         </div>
       </motion.div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Quick Links */}
@@ -232,7 +232,7 @@ const TournamentDetail = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="card p-6"
+            className="card p-4 sm:p-6"
           >
             <h2 className="font-semibold text-lg text-slate-800 mb-4">Share Links</h2>
             <div className="space-y-4">
@@ -243,13 +243,14 @@ const TournamentDetail = () => {
                     type="text"
                     value={registrationUrl}
                     readOnly
-                    className="input-field text-sm bg-slate-50"
+                    className="input-field text-xs sm:text-sm bg-slate-50 flex-1 min-w-0"
                   />
                   <button
                     onClick={() => copyToClipboard(registrationUrl, 'Registration link')}
-                    className="btn-secondary py-2 px-4"
+                    className="btn-secondary py-2 px-3 sm:px-4 flex-shrink-0"
+                    aria-label="Copy registration link"
                   >
-                    <ClipboardIcon className="w-5 h-5" />
+                    <ClipboardIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
               </div>
@@ -260,13 +261,14 @@ const TournamentDetail = () => {
                     type="text"
                     value={leaderboardUrl}
                     readOnly
-                    className="input-field text-sm bg-slate-50"
+                    className="input-field text-xs sm:text-sm bg-slate-50 flex-1 min-w-0"
                   />
                   <button
                     onClick={() => copyToClipboard(leaderboardUrl, 'Leaderboard link')}
-                    className="btn-secondary py-2 px-4"
+                    className="btn-secondary py-2 px-3 sm:px-4 flex-shrink-0"
+                    aria-label="Copy leaderboard link"
                   >
-                    <ClipboardIcon className="w-5 h-5" />
+                    <ClipboardIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
               </div>
@@ -278,16 +280,16 @@ const TournamentDetail = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="card p-6"
+            className="card p-4 sm:p-6"
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-lg text-slate-800">Fishing Areas</h2>
               <Link
                 to={`/organizer/tournaments/${id}/ponds`}
-                className="btn-primary text-sm py-2"
+                className="btn-primary text-xs sm:text-sm py-2 px-3 sm:px-4"
               >
-                <PlusIcon className="w-4 h-4 mr-1 inline" />
-                Manage Ponds
+                <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 inline" />
+                <span className="whitespace-nowrap">Manage Ponds</span>
               </Link>
             </div>
 
@@ -376,7 +378,7 @@ const TournamentDetail = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="card p-6"
+              className="card p-4 sm:p-6"
             >
               <h2 className="font-semibold text-lg text-slate-800 mb-3">Description</h2>
               <p className="text-slate-600 text-sm whitespace-pre-wrap">{tournament.description}</p>

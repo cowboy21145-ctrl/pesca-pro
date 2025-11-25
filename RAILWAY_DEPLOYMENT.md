@@ -33,24 +33,101 @@ git push -u origin main
 4. Click on the MySQL service
 5. Go to **"Variables"** tab
 6. Note these variables (you'll need them):
-   - `MYSQLHOST`
+   - `MYSQLHOST` - **Important**: This shows `mysql.railway.internal` (internal) or `xxx.proxy.rlwy.net` (external)
    - `MYSQLPORT`
    - `MYSQLUSER`
    - `MYSQLPASSWORD`
    - `MYSQLDATABASE`
 
+### Understanding Railway MySQL Hostnames
+
+Railway provides two hostnames:
+
+1. **`mysql.railway.internal`** - Internal hostname
+   - Use this when connecting **from another Railway service** (e.g., your backend service)
+   - Only works within Railway's network
+   - Faster connection (no external routing)
+
+2. **`xxx.proxy.rlwy.net`** - External/public hostname
+   - Use this when connecting **from outside Railway** (your local machine, MySQL Workbench, etc.)
+   - Works from anywhere on the internet
+   - Required for local development tools
+
+**For your backend service on Railway**: Use `mysql.railway.internal`  
+**For local MySQL clients**: Use the `xxx.proxy.rlwy.net` hostname (check the "Connect" tab or use the public hostname)
+
 ## Step 4: Run Database Schema
 
-1. In MySQL service, go to **"Data"** tab
-2. Click **"Connect"** → Copy the connection string
-3. Or use MySQL Workbench/DBeaver to connect
-4. Run your schema:
+You need to run the database schema to create all tables. Here are the options:
+
+### Option 1: Using MySQL Command Line (Recommended)
+
+1. Get your MySQL connection details from Railway:
+   - In Railway dashboard, click on your **MySQL service**
+   - Go to **"Variables"** tab
+   - Note down these values:
+     - `MYSQLHOST` (e.g., `xxx.proxy.rlwy.net`)
+     - `MYSQLPORT` (e.g., `17091`)
+     - `MYSQLUSER` (usually `root`)
+     - `MYSQLPASSWORD` (your generated password)
+     - `MYSQLDATABASE` (usually `railway`)
+
+2. Run the schema using MySQL command line:
    ```bash
-   # Using MySQL command line
-   mysql -h MYSQLHOST -P MYSQLPORT -u MYSQLUSER -pMYSQLPASSWORD MYSQLDATABASE < backend/database/schema.sql
+   # Replace with your actual values from Railway
+   mysql -h xxx.proxy.rlwy.net -P 17091 -u root -p'YOUR_PASSWORD' railway < backend/database/schema.sql
    ```
    
-   Or connect via MySQL client and paste the contents of `backend/database/schema.sql`
+   Or connect interactively:
+   ```bash
+   mysql -h xxx.proxy.rlwy.net -P 17091 -u root -p railway
+   # Enter password when prompted
+   # Then paste the contents of backend/database/schema.sql
+   ```
+
+### Option 2: Using MySQL Workbench
+
+1. Open MySQL Workbench
+2. Click **"+"** to create new connection
+3. Enter connection details:
+   - **Hostname**: Use the **public hostname** from Railway (e.g., `xxx.proxy.rlwy.net`)
+     - **NOT** `mysql.railway.internal` (that's only for internal Railway connections)
+     - Find it in MySQL service → **"Connect"** tab or enable "Public Networking"
+   - **Port**: The public port (5-digit number like `17091`, NOT `3306`)
+   - **Username**: Your `MYSQLUSER` value from Variables tab (usually `root`)
+   - **Password**: Click "Store in Keychain" and enter your `MYSQLPASSWORD`
+   - **Default Schema**: Your `MYSQLDATABASE` value (usually `railway`)
+4. Click **"Test Connection"** to verify
+5. Click **"OK"** to save
+6. Open the connection
+7. Open `backend/database/schema.sql` file
+8. Copy and paste all SQL commands into MySQL Workbench
+9. Execute the script
+
+### Option 3: Using DBeaver (Free Database Tool)
+
+1. Download DBeaver from https://dbeaver.io
+2. Create new MySQL connection
+3. Enter Railway MySQL details:
+   - **Host**: Use the **public hostname** (e.g., `xxx.proxy.rlwy.net`)
+     - **NOT** `mysql.railway.internal` (internal only)
+     - Find in MySQL service → **"Connect"** tab
+   - **Port**: Public port (5-digit number like `17091`)
+   - **Database**: Your `MYSQLDATABASE` value from Variables (usually `railway`)
+   - **Username**: Your `MYSQLUSER` value from Variables (usually `root`)
+   - **Password**: Your `MYSQLPASSWORD` value from Variables
+4. Test connection and connect
+5. Right-click on database → **SQL Editor** → **New SQL Script**
+6. Paste contents of `backend/database/schema.sql`
+7. Execute script
+
+### Option 4: Using Railway MySQL Query Tab (If Available)
+
+Some Railway MySQL services have a **"Query"** or **"Connect"** button:
+1. Click on your MySQL service in Railway
+2. Look for **"Query"**, **"Connect"**, or **"Open"** button
+3. This opens a web-based SQL editor
+4. Paste and execute the contents of `backend/database/schema.sql`
 
 ## Step 5: Deploy Backend
 
@@ -66,13 +143,20 @@ NODE_ENV=production
 PORT=5000
 JWT_SECRET=your-very-secret-key-change-this
 
-# Railway MySQL Variables (use the ones from MySQL service)
-MYSQLHOST=your-mysql-host
-MYSQLPORT=your-mysql-port
-MYSQLUSER=your-mysql-user
+# Railway MySQL Variables (from MySQL service Variables tab)
+# Use mysql.railway.internal for internal Railway connections
+MYSQLHOST=mysql.railway.internal
+MYSQLPORT=3306
+MYSQLUSER=root
 MYSQLPASSWORD=your-mysql-password
-MYSQLDATABASE=your-mysql-database
+MYSQLDATABASE=railway
 ```
+
+**Important Notes:**
+- For `MYSQLHOST`: Use `mysql.railway.internal` (this is the internal hostname for Railway-to-Railway connections)
+- For `MYSQLPORT`: Usually `3306` (the default MySQL port, not the proxy port)
+- Copy `MYSQLPASSWORD` and `MYSQLDATABASE` from your MySQL service Variables tab
+- The backend service will connect internally, so `mysql.railway.internal` is correct
 
 6. Railway will auto-deploy. Check **Deployments** tab for logs
 

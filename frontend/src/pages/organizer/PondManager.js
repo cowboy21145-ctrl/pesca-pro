@@ -150,12 +150,19 @@ const PondManager = () => {
     e.preventDefault();
     if (!selectedZoneId) return;
     
+    // Validate price is a valid number
+    const price = parseFloat(areaForm.price);
+    if (isNaN(price) || price < 0) {
+      toast.error('Please enter a valid price (0 or greater)');
+      return;
+    }
+    
     try {
       const areas = [];
       for (let i = 0; i < parseInt(areaForm.count); i++) {
         areas.push({
           area_number: parseInt(areaForm.start_number) + i,
-          price: parseFloat(areaForm.price)
+          price: price
         });
       }
       
@@ -524,10 +531,16 @@ const PondManager = () => {
                   <input
                     type="number"
                     value={areaForm.price}
-                    onChange={(e) => setAreaForm({ ...areaForm, price: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty, numbers, and decimals
+                      if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                        setAreaForm({ ...areaForm, price: value });
+                      }
+                    }}
                     className="input-field pl-12"
                     min="0"
-                    step="1000"
+                    step="0.01"
                     required
                   />
                 </div>

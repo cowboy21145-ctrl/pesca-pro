@@ -79,10 +79,18 @@ router.post('/bulk', authenticate, isOrganizer, async (req, res) => {
       return res.status(404).json({ message: 'Zone not found or unauthorized' });
     }
 
+    // Validate all prices are valid numbers
+    for (const area of areas) {
+      const price = parseFloat(area.price);
+      if (isNaN(price) || price < 0) {
+        return res.status(400).json({ message: 'All areas must have a valid price (0 or greater)' });
+      }
+    }
+
     const values = areas.map(area => [
       zone_id,
       area.area_number,
-      area.price || 0,
+      parseFloat(area.price),
       area.position_x || 0,
       area.position_y || 0
     ]);
@@ -133,6 +141,14 @@ router.get('/zone/:zoneId', async (req, res) => {
 router.put('/:id', authenticate, isOrganizer, async (req, res) => {
   try {
     const { area_number, price, is_available, position_x, position_y } = req.body;
+
+    // Validate price is a valid number if price is being updated
+    if (price !== undefined) {
+      const priceValue = parseFloat(price);
+      if (isNaN(priceValue) || priceValue < 0) {
+        return res.status(400).json({ message: 'Price must be a valid number (0 or greater)' });
+      }
+    }
 
     // Verify ownership
     const [areas] = await pool.query(

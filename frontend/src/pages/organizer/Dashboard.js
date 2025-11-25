@@ -63,7 +63,7 @@ const OrganizerDashboard = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl p-8 text-white"
+        className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 text-white"
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -79,15 +79,15 @@ const OrganizerDashboard = () => {
               </p>
             </div>
           </div>
-          <Link to="/organizer/tournaments/create" className="btn-success flex items-center gap-2">
-            <PlusIcon className="w-5 h-5" />
-            Create Tournament
+          <Link to="/organizer/tournaments/create" className="btn-success flex items-center justify-center gap-2 w-full sm:w-auto">
+            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="whitespace-nowrap">Create Tournament</span>
           </Link>
         </div>
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { icon: TrophyIcon, label: 'Total Tournaments', value: stats.total, color: 'ocean' },
           { icon: ClockIcon, label: 'Active', value: stats.active, color: 'fish' },
@@ -99,7 +99,7 @@ const OrganizerDashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="card p-6"
+            className="card p-4 sm:p-6"
           >
             <div className={`w-12 h-12 rounded-xl bg-${stat.color}-100 flex items-center justify-center mb-4`}>
               <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
