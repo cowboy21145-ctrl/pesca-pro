@@ -567,7 +567,6 @@ const TournamentCreate = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
