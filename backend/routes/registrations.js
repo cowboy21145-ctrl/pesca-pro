@@ -248,20 +248,46 @@ router.post('/draft', authenticate, isUser, [
       );
       const hasPondZoneColumns = columns.length === 2;
       
+      // Check if updated_at column exists
+      const [updateColumns] = await connection.query(
+        `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
+         WHERE TABLE_SCHEMA = DATABASE() 
+         AND TABLE_NAME = 'registrations' 
+         AND COLUMN_NAME = 'updated_at'`
+      );
+      const hasUpdatedAt = updateColumns.length > 0;
+      
       if (hasPondZoneColumns) {
-        await connection.query(
-          `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, 
-           pond_id = ?, zone_id = ?, updated_at = CURRENT_TIMESTAMP
-           WHERE registration_id = ?`,
-          [total_payment, bank_account_no || null, bank_name || null, pond_id || null, zone_id || null, registration_id]
-        );
+        if (hasUpdatedAt) {
+          await connection.query(
+            `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, 
+             pond_id = ?, zone_id = ?, updated_at = CURRENT_TIMESTAMP
+             WHERE registration_id = ?`,
+            [total_payment, bank_account_no || null, bank_name || null, pond_id || null, zone_id || null, registration_id]
+          );
+        } else {
+          await connection.query(
+            `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, 
+             pond_id = ?, zone_id = ?
+             WHERE registration_id = ?`,
+            [total_payment, bank_account_no || null, bank_name || null, pond_id || null, zone_id || null, registration_id]
+          );
+        }
       } else {
         // Fallback: update without pond_id/zone_id
-        await connection.query(
-          `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, updated_at = CURRENT_TIMESTAMP
-           WHERE registration_id = ?`,
-          [total_payment, bank_account_no || null, bank_name || null, registration_id]
-        );
+        if (hasUpdatedAt) {
+          await connection.query(
+            `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, updated_at = CURRENT_TIMESTAMP
+             WHERE registration_id = ?`,
+            [total_payment, bank_account_no || null, bank_name || null, registration_id]
+          );
+        } else {
+          await connection.query(
+            `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?
+             WHERE registration_id = ?`,
+            [total_payment, bank_account_no || null, bank_name || null, registration_id]
+          );
+        }
       }
       // Delete old area selections
       await connection.query('DELETE FROM area_selections WHERE registration_id = ?', [registration_id]);
@@ -412,13 +438,24 @@ router.get('/my-registrations', authenticate, isUser, async (req, res) => {
 // Get user's draft registrations
 router.get('/my-drafts', authenticate, isUser, async (req, res) => {
   try {
+    // Check if updated_at column exists
+    const [columns] = await pool.query(
+      `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
+       WHERE TABLE_SCHEMA = DATABASE() 
+       AND TABLE_NAME = 'registrations' 
+       AND COLUMN_NAME = 'updated_at'`
+    );
+    const hasUpdatedAt = columns.length > 0;
+    
+    const orderBy = hasUpdatedAt ? 'r.updated_at DESC' : 'r.registered_at DESC';
+    
     const [registrations] = await pool.query(
       `SELECT r.*, t.name as tournament_name, t.location, t.start_date, t.end_date, t.registration_link,
         (SELECT COUNT(*) FROM area_selections s WHERE s.registration_id = r.registration_id) as area_count
        FROM registrations r
        JOIN tournaments t ON r.tournament_id = t.tournament_id
        WHERE r.user_id = ? AND r.status = 'draft'
-       ORDER BY r.updated_at DESC`,
+       ORDER BY ${orderBy}`,
       [req.user.id]
     );
 
