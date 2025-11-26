@@ -94,51 +94,48 @@ const TournamentCreate = () => {
   };
 
   return (
-    <div className="min-h-full -m-3 md:-m-4 lg:-m-6 xl:-m-8">
-      {/* Full Page Container */}
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-ocean-50/30 to-forest-50/30">
-        {/* Header Section */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-6 xl:px-8 py-3 md:py-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => navigate('/organizer/tournaments')}
-                  className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
-                >
-                  <ArrowLeftIcon className="w-5 h-5" />
-                </button>
-                <div>
-                  <h1 className="text-xl md:text-2xl font-bold text-slate-800">Create New Tournament</h1>
-                  <p className="text-slate-500 text-xs md:text-sm lg:text-base">
-                    Set up your fishing tournament details
-                  </p>
-                </div>
-              </div>
-              <div className="hidden md:flex items-center gap-2 text-xs md:text-sm text-forest-600 bg-forest-50 px-3 md:px-4 py-2 rounded-full">
-                <SparklesIcon className="w-4 h-4" />
-                <span>New Tournament</span>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-ocean-50/30 to-forest-50/30">
+      {/* Header Section */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={() => navigate('/organizer/tournaments')}
+              className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex-shrink-0 touch-manipulation min-h-[44px]"
+              aria-label="Go back"
+            >
+              <ArrowLeftIcon className="w-5 h-5" />
+            </button>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 truncate">Create New Tournament</h1>
+              <p className="text-slate-500 text-xs sm:text-sm md:text-base mt-0.5">
+                Set up your fishing tournament details
+              </p>
+            </div>
+            <div className="hidden md:flex items-center gap-2 text-xs md:text-sm text-forest-600 bg-forest-50 px-3 md:px-4 py-2 rounded-full flex-shrink-0">
+              <SparklesIcon className="w-4 h-4" />
+              <span>New Tournament</span>
             </div>
           </div>
         </div>
+      </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-6 xl:px-8 py-4 md:py-6 lg:py-8 xl:py-10">
-          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Form Section - Takes 2 columns on large screens */}
             <motion.form
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               onSubmit={handleSubmit}
-              className="lg:col-span-2 space-y-6"
+              className="lg:col-span-2 space-y-4 sm:space-y-6"
             >
               {/* Banner Image Card */}
-              <div className="card p-4 md:p-6">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
+              <div className="card p-4 sm:p-6">
+                <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
                   Tournament Banner
-                  <span className="text-slate-400 font-normal ml-2">(Optional)</span>
+                  <span className="text-slate-400 font-normal ml-2 text-xs sm:text-sm">(Optional)</span>
                 </label>
                 <input
                   type="file"
@@ -169,22 +166,22 @@ const TournamentCreate = () => {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full aspect-[21/9] md:aspect-[3/1] border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center hover:border-forest-500 hover:bg-forest-50/50 transition-all duration-300 group min-h-[200px] touch-manipulation"
+                    className="w-full aspect-[21/9] sm:aspect-[3/1] border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center hover:border-forest-500 hover:bg-forest-50/50 active:bg-forest-50 transition-all duration-300 group min-h-[150px] sm:min-h-[200px] touch-manipulation"
                   >
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-100 group-hover:bg-forest-100 flex items-center justify-center mb-3 transition-colors">
-                      <PhotoIcon className="w-8 h-8 sm:w-10 sm:h-10 text-slate-400 group-hover:text-forest-500 transition-colors" />
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-slate-100 group-hover:bg-forest-100 flex items-center justify-center mb-2 sm:mb-3 transition-colors flex-shrink-0">
+                      <PhotoIcon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-slate-400 group-hover:text-forest-500 transition-colors" />
                     </div>
-                    <p className="text-slate-600 font-medium text-xs md:text-sm lg:text-base">Click to upload banner</p>
-                    <p className="text-slate-400 text-xs md:text-sm mt-1">Recommended: 1200 x 400 pixels</p>
+                    <p className="text-slate-600 font-medium text-xs sm:text-sm md:text-base px-2 text-center">Click to upload banner</p>
+                    <p className="text-slate-400 text-xs sm:text-sm mt-1 px-2 text-center">Recommended: 1200 x 400 pixels</p>
                   </button>
                 )}
               </div>
 
               {/* Payment Details Image Card */}
-              <div className="card p-4 md:p-6">
-                <label className="block text-sm font-semibold text-slate-700 mb-3">
+              <div className="card p-4 sm:p-6">
+                <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
                   Payment Details Image
-                  <span className="text-slate-400 font-normal ml-2">(Optional - Bank account info, QR code, etc.)</span>
+                  <span className="text-slate-400 font-normal ml-1 sm:ml-2 text-xs sm:text-sm block sm:inline mt-1 sm:mt-0">(Optional - Bank account info, QR code, etc.)</span>
                 </label>
                 <input
                   type="file"
@@ -215,36 +212,36 @@ const TournamentCreate = () => {
                   <button
                     type="button"
                     onClick={() => paymentInputRef.current?.click()}
-                    className="w-full max-w-md mx-auto border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center hover:border-forest-500 hover:bg-forest-50/50 transition-all duration-300 group min-h-[150px] touch-manipulation"
+                    className="w-full max-w-md mx-auto border-2 border-dashed border-slate-300 rounded-xl p-4 sm:p-6 flex flex-col items-center justify-center hover:border-forest-500 hover:bg-forest-50/50 active:bg-forest-50 transition-all duration-300 group min-h-[120px] sm:min-h-[150px] touch-manipulation"
                   >
-                    <div className="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-forest-100 flex items-center justify-center mb-3 transition-colors">
-                      <PhotoIcon className="w-6 h-6 text-slate-400 group-hover:text-forest-500 transition-colors" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-100 group-hover:bg-forest-100 flex items-center justify-center mb-2 sm:mb-3 transition-colors flex-shrink-0">
+                      <PhotoIcon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-hover:text-forest-500 transition-colors" />
                     </div>
-                    <p className="text-slate-600 font-medium text-xs md:text-sm">Click to upload payment details</p>
-                    <p className="text-slate-400 text-xs mt-1">Bank account info, QR code, etc.</p>
+                    <p className="text-slate-600 font-medium text-xs sm:text-sm px-2 text-center">Click to upload payment details</p>
+                    <p className="text-slate-400 text-xs mt-1 px-2 text-center">Bank account info, QR code, etc.</p>
                   </button>
                 )}
               </div>
 
               {/* Basic Info Card */}
-              <div className="card p-4 sm:p-6 space-y-5">
-                <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                  <TrophyIcon className="w-5 h-5 text-forest-500" />
+              <div className="card p-4 sm:p-6 space-y-4 sm:space-y-5">
+                <h2 className="text-base sm:text-lg font-semibold text-slate-800 flex items-center gap-2">
+                  <TrophyIcon className="w-5 h-5 text-forest-500 flex-shrink-0" />
                   Basic Information
                 </h2>
 
                 {/* Tournament Name */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm sm:text-base font-medium text-slate-700 mb-2">
                     Tournament Name <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <TrophyIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <TrophyIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0 pointer-events-none" />
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="input-field pl-12 text-base"
+                      className="input-field pl-10 sm:pl-12 text-sm sm:text-base min-h-[44px]"
                       placeholder="e.g., Spring Fishing Championship 2024"
                       required
                     />
@@ -253,16 +250,16 @@ const TournamentCreate = () => {
 
                 {/* Location */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm sm:text-base font-medium text-slate-700 mb-2">
                     Location
                   </label>
                   <div className="relative">
-                    <MapPinIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <MapPinIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0 pointer-events-none" />
                     <input
                       type="text"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      className="input-field pl-12 text-base"
+                      className="input-field pl-10 sm:pl-12 text-sm sm:text-base min-h-[44px]"
                       placeholder="e.g., Lake Toba, North Sumatra"
                     />
                   </div>
@@ -270,36 +267,36 @@ const TournamentCreate = () => {
 
                 {/* Tournament Dates */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
                     Tournament Dates <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-slate-600 mb-1.5">
                         Start Date
                       </label>
                       <div className="relative">
-                        <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <CalendarIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0 pointer-events-none" />
                         <input
                           type="date"
                           value={formData.start_date}
                           onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                          className="input-field pl-12 text-base"
+                          className="input-field pl-10 sm:pl-12 text-sm sm:text-base min-h-[44px]"
                           required
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-slate-600 mb-1.5">
                         End Date
                       </label>
                       <div className="relative">
-                        <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <CalendarIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0 pointer-events-none" />
                         <input
                           type="date"
                           value={formData.end_date}
                           onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                          className="input-field pl-12 text-base"
+                          className="input-field pl-10 sm:pl-12 text-sm sm:text-base min-h-[44px]"
                           required
                         />
                       </div>
@@ -309,35 +306,35 @@ const TournamentCreate = () => {
 
                 {/* Tournament Times */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
                     Tournament Times
                   </label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-slate-600 mb-1.5">
                         Start Time
                       </label>
                       <div className="relative">
-                        <ClockIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <ClockIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0 pointer-events-none" />
                         <input
                           type="time"
                           value={formData.tournament_start_time}
                           onChange={(e) => setFormData({ ...formData, tournament_start_time: e.target.value })}
-                          className="input-field pl-12 text-base"
+                          className="input-field pl-10 sm:pl-12 text-sm sm:text-base min-h-[44px]"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-slate-600 mb-1.5">
                         End Time
                       </label>
                       <div className="relative">
-                        <ClockIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <ClockIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0 pointer-events-none" />
                         <input
                           type="time"
                           value={formData.tournament_end_time}
                           onChange={(e) => setFormData({ ...formData, tournament_end_time: e.target.value })}
-                          className="input-field pl-12 text-base"
+                          className="input-field pl-10 sm:pl-12 text-sm sm:text-base min-h-[44px]"
                         />
                       </div>
                     </div>
@@ -346,35 +343,35 @@ const TournamentCreate = () => {
 
                 {/* Registration Dates */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
                     Registration Period
                   </label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-slate-600 mb-1.5">
                         Registration Start
                       </label>
                       <div className="relative">
-                        <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <CalendarIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0 pointer-events-none" />
                         <input
                           type="date"
                           value={formData.registration_start_date}
                           onChange={(e) => setFormData({ ...formData, registration_start_date: e.target.value })}
-                          className="input-field pl-12 text-base"
+                          className="input-field pl-10 sm:pl-12 text-sm sm:text-base min-h-[44px]"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-slate-600 mb-1.5">
                         Registration End
                       </label>
                       <div className="relative">
-                        <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <CalendarIcon className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 flex-shrink-0 pointer-events-none" />
                         <input
                           type="date"
                           value={formData.registration_end_date}
                           onChange={(e) => setFormData({ ...formData, registration_end_date: e.target.value })}
-                          className="input-field pl-12 text-base"
+                          className="input-field pl-10 sm:pl-12 text-sm sm:text-base min-h-[44px]"
                         />
                       </div>
                     </div>
@@ -383,14 +380,14 @@ const TournamentCreate = () => {
 
                 {/* Tournament Structure */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2 sm:mb-3">
                     Tournament Structure <span className="text-red-500">*</span>
                   </label>
-                  <p className="text-xs text-slate-500 mb-3">
+                  <p className="text-xs sm:text-sm text-slate-500 mb-3">
                     Choose how participants will register: by pond, by zone, or by specific area
                   </p>
-                  <div className="space-y-3">
-                    <label className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-forest-500 hover:bg-forest-50/50"
+                  <div className="space-y-2 sm:space-y-3">
+                    <label className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border-2 rounded-xl cursor-pointer transition-all active:bg-forest-50/50 hover:border-forest-500 hover:bg-forest-50/50 touch-manipulation"
                       style={{ borderColor: formData.structure_type === 'pond_only' ? '#10b981' : '#e2e8f0' }}>
                       <input
                         type="radio"
@@ -398,14 +395,14 @@ const TournamentCreate = () => {
                         value="pond_only"
                         checked={formData.structure_type === 'pond_only'}
                         onChange={(e) => setFormData({ ...formData, structure_type: e.target.value })}
-                        className="mt-1 w-4 h-4 text-forest-500"
+                        className="mt-0.5 sm:mt-1 w-4 h-4 sm:w-5 sm:h-5 text-forest-500 flex-shrink-0"
                       />
-                      <div className="flex-1">
-                        <div className="font-semibold text-slate-800">Pond Only</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm sm:text-base text-slate-800">Pond Only</div>
                         <div className="text-xs text-slate-600 mt-1">Participants register by selecting a pond. Set price per pond.</div>
                       </div>
                     </label>
-                    <label className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-forest-500 hover:bg-forest-50/50"
+                    <label className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border-2 rounded-xl cursor-pointer transition-all active:bg-forest-50/50 hover:border-forest-500 hover:bg-forest-50/50 touch-manipulation"
                       style={{ borderColor: formData.structure_type === 'pond_zone' ? '#10b981' : '#e2e8f0' }}>
                       <input
                         type="radio"
@@ -413,14 +410,14 @@ const TournamentCreate = () => {
                         value="pond_zone"
                         checked={formData.structure_type === 'pond_zone'}
                         onChange={(e) => setFormData({ ...formData, structure_type: e.target.value })}
-                        className="mt-1 w-4 h-4 text-forest-500"
+                        className="mt-0.5 sm:mt-1 w-4 h-4 sm:w-5 sm:h-5 text-forest-500 flex-shrink-0"
                       />
-                      <div className="flex-1">
-                        <div className="font-semibold text-slate-800">Pond + Zone</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm sm:text-base text-slate-800">Pond + Zone</div>
                         <div className="text-xs text-slate-600 mt-1">Participants register by selecting a zone within a pond. Set price per zone.</div>
                       </div>
                     </label>
-                    <label className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-forest-500 hover:bg-forest-50/50"
+                    <label className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border-2 rounded-xl cursor-pointer transition-all active:bg-forest-50/50 hover:border-forest-500 hover:bg-forest-50/50 touch-manipulation"
                       style={{ borderColor: formData.structure_type === 'pond_zone_area' ? '#10b981' : '#e2e8f0' }}>
                       <input
                         type="radio"
@@ -428,10 +425,10 @@ const TournamentCreate = () => {
                         value="pond_zone_area"
                         checked={formData.structure_type === 'pond_zone_area'}
                         onChange={(e) => setFormData({ ...formData, structure_type: e.target.value })}
-                        className="mt-1 w-4 h-4 text-forest-500"
+                        className="mt-0.5 sm:mt-1 w-4 h-4 sm:w-5 sm:h-5 text-forest-500 flex-shrink-0"
                       />
-                      <div className="flex-1">
-                        <div className="font-semibold text-slate-800">Pond + Zone + Area</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm sm:text-base text-slate-800">Pond + Zone + Area</div>
                         <div className="text-xs text-slate-600 mt-1">Participants register by selecting specific areas. Set price per area. (Most detailed)</div>
                       </div>
                     </label>
@@ -440,9 +437,9 @@ const TournamentCreate = () => {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm sm:text-base font-medium text-slate-700 mb-2">
                     Description
-                    <span className="text-slate-400 font-normal ml-2">(Supports bold, italic, lists)</span>
+                    <span className="text-slate-400 font-normal ml-1 sm:ml-2 text-xs sm:text-sm block sm:inline mt-1 sm:mt-0">(Supports bold, italic, lists)</span>
                   </label>
                   <RichTextEditor
                     value={formData.description}
@@ -453,25 +450,25 @@ const TournamentCreate = () => {
               </div>
 
               {/* Submit Buttons - Mobile */}
-              <div className="lg:hidden flex flex-col md:flex-row gap-3">
+              <div className="lg:hidden flex flex-col sm:flex-row gap-3 sm:gap-4 pb-4">
                 <button
                   type="button"
                   onClick={() => navigate('/organizer/tournaments')}
-                  className="btn-secondary flex-1 py-3 text-base"
+                  className="btn-secondary flex-1 py-3 sm:py-3.5 text-sm sm:text-base min-h-[44px] touch-manipulation"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn-success flex-1 py-3 text-base flex items-center justify-center gap-2"
+                  className="btn-success flex-1 py-3 sm:py-3.5 text-sm sm:text-base flex items-center justify-center gap-2 min-h-[44px] touch-manipulation"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <TrophyIcon className="w-5 h-5" />
-                      Create Tournament
+                      <TrophyIcon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                      <span>Create Tournament</span>
                     </>
                   )}
                 </button>
@@ -483,18 +480,18 @@ const TournamentCreate = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="space-y-6"
+              className="hidden lg:block space-y-4 sm:space-y-6"
             >
               {/* What's Next Card */}
-              <div className="card p-5 sm:p-6 bg-gradient-to-br from-forest-50 to-ocean-50 border-forest-200">
-                <h3 className="font-semibold text-forest-800 mb-3 flex items-center gap-2">
-                  <span className="text-xl">📋</span>
+              <div className="card p-4 sm:p-5 lg:p-6 bg-gradient-to-br from-forest-50 to-ocean-50 border-forest-200">
+                <h3 className="font-semibold text-sm sm:text-base text-forest-800 mb-2 sm:mb-3 flex items-center gap-2">
+                  <span className="text-lg sm:text-xl">📋</span>
                   What's Next?
                 </h3>
-                <p className="text-forest-700 text-sm mb-4">
+                <p className="text-forest-700 text-xs sm:text-sm mb-3 sm:mb-4">
                   After creating the tournament, you'll be able to:
                 </p>
-                <ul className="text-forest-700 text-sm space-y-3">
+                <ul className="text-forest-700 text-xs sm:text-sm space-y-2 sm:space-y-3">
                   <li className="flex items-start gap-3">
                     <span className="w-6 h-6 rounded-full bg-forest-200 text-forest-700 flex items-center justify-center text-xs font-semibold flex-shrink-0">1</span>
                     <span>Add ponds and configure fishing zones/areas</span>
@@ -515,12 +512,12 @@ const TournamentCreate = () => {
               </div>
 
               {/* Tips Card */}
-              <div className="card p-5 sm:p-6 bg-gradient-to-br from-ocean-50 to-slate-50 border-ocean-200">
-                <h3 className="font-semibold text-ocean-800 mb-3 flex items-center gap-2">
-                  <span className="text-xl">💡</span>
+              <div className="card p-4 sm:p-5 lg:p-6 bg-gradient-to-br from-ocean-50 to-slate-50 border-ocean-200">
+                <h3 className="font-semibold text-sm sm:text-base text-ocean-800 mb-2 sm:mb-3 flex items-center gap-2">
+                  <span className="text-lg sm:text-xl">💡</span>
                   Pro Tips
                 </h3>
-                <ul className="text-ocean-700 text-sm space-y-2">
+                <ul className="text-ocean-700 text-xs sm:text-sm space-y-1.5 sm:space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-ocean-500">•</span>
                     <span>Use a clear, descriptive tournament name</span>
