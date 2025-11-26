@@ -181,20 +181,50 @@ router.post('/draft', authenticate, isUser, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { tournament_id, bank_account_no, bank_name, area_ids } = req.body;
+    const { tournament_id, bank_account_no, bank_name, area_ids, pond_id, zone_id } = req.body;
     const user_id = req.user.id;
 
     await connection.beginTransaction();
 
-    // Calculate total payment from areas
+    // Get tournament structure type
+    const [tournaments] = await connection.query(
+      'SELECT structure_type FROM tournaments WHERE tournament_id = ?',
+      [tournament_id]
+    );
+
+    if (tournaments.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Tournament not found' });
+    }
+
+    const structure_type = tournaments[0].structure_type || 'pond_zone_area';
+
+    // Calculate total payment based on structure type
     let total_payment = 0;
-    if (area_ids && area_ids.length > 0) {
+    
+    if (structure_type === 'pond_zone_area' && area_ids && area_ids.length > 0) {
       const areaIdsArray = typeof area_ids === 'string' ? JSON.parse(area_ids) : area_ids;
       const [areas] = await connection.query(
         'SELECT area_id, price FROM areas WHERE area_id IN (?)',
         [areaIdsArray]
       );
-      total_payment = areas.reduce((sum, a) => sum + parseFloat(a.price), 0);
+      total_payment = areas.reduce((sum, a) => sum + parseFloat(a.price || 0), 0);
+    } else if (structure_type === 'pond_zone' && zone_id) {
+      const [zones] = await connection.query(
+        'SELECT price FROM zones WHERE zone_id = ?',
+        [zone_id]
+      );
+      if (zones.length > 0) {
+        total_payment = parseFloat(zones[0].price || 0);
+      }
+    } else if (structure_type === 'pond_only' && pond_id) {
+      const [ponds] = await connection.query(
+        'SELECT price FROM ponds WHERE pond_id = ?',
+        [pond_id]
+      );
+      if (ponds.length > 0) {
+        total_payment = parseFloat(ponds[0].price || 0);
+      }
     }
 
     // Check if draft exists
@@ -209,18 +239,19 @@ router.post('/draft', authenticate, isUser, [
       // Update existing draft
       registration_id = draftReg[0].registration_id;
       await connection.query(
-        `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, updated_at = CURRENT_TIMESTAMP
+        `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, 
+         pond_id = ?, zone_id = ?, updated_at = CURRENT_TIMESTAMP
          WHERE registration_id = ?`,
-        [total_payment, bank_account_no || null, bank_name || null, registration_id]
+        [total_payment, bank_account_no || null, bank_name || null, pond_id || null, zone_id || null, registration_id]
       );
       // Delete old area selections
       await connection.query('DELETE FROM area_selections WHERE registration_id = ?', [registration_id]);
     } else {
       // Create new draft
       const [regResult] = await connection.query(
-        `INSERT INTO registrations (user_id, tournament_id, total_payment, bank_account_no, bank_name, status)
-         VALUES (?, ?, ?, ?, ?, 'draft')`,
-        [user_id, tournament_id, total_payment, bank_account_no || null, bank_name || null]
+        `INSERT INTO registrations (user_id, tournament_id, total_payment, bank_account_no, bank_name, pond_id, zone_id, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'draft')`,
+        [user_id, tournament_id, total_payment, bank_account_no || null, bank_name || null, pond_id || null, zone_id || null]
       );
       registration_id = regResult.insertId;
     }
@@ -257,9 +288,13 @@ router.post('/draft', authenticate, isUser, [
 router.get('/draft/:tournamentId', authenticate, isUser, async (req, res) => {
   try {
     const [registrations] = await pool.query(
-      `SELECT r.*, t.name as tournament_name, t.registration_link
+      `SELECT r.*, t.name as tournament_name, t.registration_link, t.structure_type,
+       p.pond_name, p.price as pond_price,
+       z.zone_name, z.price as zone_price
        FROM registrations r
        JOIN tournaments t ON r.tournament_id = t.tournament_id
+       LEFT JOIN ponds p ON r.pond_id = p.pond_id
+       LEFT JOIN zones z ON r.zone_id = z.zone_id
        WHERE r.user_id = ? AND r.tournament_id = ? AND r.status = 'draft'`,
       [req.user.id, req.params.tournamentId]
     );
@@ -270,9 +305,9 @@ router.get('/draft/:tournamentId', authenticate, isUser, async (req, res) => {
 
     const registration = registrations[0];
 
-    // Get selected areas
+    // Get selected areas (for pond_zone_area structure)
     const [areas] = await pool.query(
-      `SELECT s.area_id, a.area_number, a.price, z.zone_name, z.zone_number, p.pond_name, p.pond_id
+      `SELECT s.area_id, a.area_number, a.price, z.zone_name, z.zone_number, z.zone_id, p.pond_name, p.pond_id
        FROM area_selections s
        JOIN areas a ON s.area_id = a.area_id
        JOIN zones z ON a.zone_id = z.zone_id
@@ -283,6 +318,9 @@ router.get('/draft/:tournamentId', authenticate, isUser, async (req, res) => {
 
     registration.selected_areas = areas;
     registration.area_ids = areas.map(a => a.area_id);
+
+    // If pond_id or zone_id is stored directly, include them
+    // (These are already in the registration object from the SELECT query)
 
     res.json(registration);
   } catch (error) {

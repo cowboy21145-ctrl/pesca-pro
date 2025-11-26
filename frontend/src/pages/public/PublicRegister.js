@@ -28,6 +28,7 @@ const PublicRegister = () => {
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
   // Initialize step based on authentication status - skip auth if already logged in
+  // If user has a draft, start at step 2 (will be set when draft loads)
   const [step, setStep] = useState(isAuthenticated && isUser ? 2 : 1);
   
   // Auth state
@@ -39,6 +40,8 @@ const PublicRegister = () => {
   
   // Selection state
   const [selectedAreas, setSelectedAreas] = useState([]);
+  const [selectedPond, setSelectedPond] = useState(null);
+  const [selectedZone, setSelectedZone] = useState(null);
   const [bankName, setBankName] = useState('');
   const [bankAccountNo, setBankAccountNo] = useState('');
   const [receipt, setReceipt] = useState(null);
@@ -65,8 +68,10 @@ const PublicRegister = () => {
           if (draft.bank_name) setBankName(draft.bank_name);
           if (draft.bank_account_no) setBankAccountNo(draft.bank_account_no);
           
-          // Restore selected areas
-          if (draft.selected_areas && draft.selected_areas.length > 0) {
+          const structureType = tournament?.structure_type || 'pond_zone_area';
+          
+          // Restore selections based on structure type
+          if (structureType === 'pond_zone_area' && draft.selected_areas && draft.selected_areas.length > 0) {
             const restoredAreas = draft.selected_areas.map(area => ({
               key: `${area.pond_id}-${area.zone_id}-${area.area_id}`,
               area_id: area.area_id,
@@ -76,6 +81,44 @@ const PublicRegister = () => {
               pond_name: area.pond_name
             }));
             setSelectedAreas(restoredAreas);
+          } else if (structureType === 'pond_zone' && draft.zone_id) {
+            // Find and restore selected zone from tournament data
+            const zone = tournament.ponds?.flatMap(p => p.zones || [])
+              .find(z => z.zone_id === draft.zone_id);
+            if (zone) {
+              const pond = tournament.ponds?.find(p => p.zones?.some(z => z.zone_id === zone.zone_id));
+              setSelectedZone({ 
+                ...zone, 
+                pond_name: pond?.pond_name,
+                price: draft.zone_price || zone.price
+              });
+            } else if (draft.zone_name) {
+              // Fallback: create zone object from draft data
+              setSelectedZone({
+                zone_id: draft.zone_id,
+                zone_name: draft.zone_name,
+                price: draft.zone_price || 0,
+                pond_name: draft.pond_name || ''
+              });
+            }
+          } else if (structureType === 'pond_only' && draft.pond_id) {
+            // Find and restore selected pond from tournament data
+            const pond = tournament.ponds?.find(p => p.pond_id === draft.pond_id);
+            if (pond) {
+              setSelectedPond(pond);
+            } else if (draft.pond_name) {
+              // Fallback: create pond object from draft data
+              setSelectedPond({
+                pond_id: draft.pond_id,
+                pond_name: draft.pond_name,
+                price: draft.pond_price || 0
+              });
+            }
+          }
+          
+          // If draft has any data, move to step 2 (registration form)
+          if (draft.bank_name || draft.bank_account_no || draft.selected_areas?.length > 0 || draft.zone_id || draft.pond_id) {
+            setStep(2);
             toast.success('Draft registration loaded. Continue where you left off!', { duration: 4000 });
           }
           
@@ -90,8 +133,35 @@ const PublicRegister = () => {
                 const draft = JSON.parse(localDraft);
                 if (draft.bankName) setBankName(draft.bankName);
                 if (draft.bankAccountNo) setBankAccountNo(draft.bankAccountNo);
-                if (draft.selectedAreas && draft.selectedAreas.length > 0) {
+                
+                const structureType = tournament?.structure_type || draft.structureType || 'pond_zone_area';
+                
+                // Restore selections from localStorage
+                if (structureType === 'pond_zone_area' && draft.selectedAreas && draft.selectedAreas.length > 0) {
                   setSelectedAreas(draft.selectedAreas);
+                } else if (structureType === 'pond_zone' && draft.selectedZone) {
+                  // Try to find zone in tournament data first
+                  const zone = tournament.ponds?.flatMap(p => p.zones || [])
+                    .find(z => z.zone_id === draft.selectedZone.zone_id);
+                  if (zone) {
+                    const pond = tournament.ponds?.find(p => p.zones?.some(z => z.zone_id === zone.zone_id));
+                    setSelectedZone({ ...zone, pond_name: pond?.pond_name });
+                  } else {
+                    setSelectedZone(draft.selectedZone);
+                  }
+                } else if (structureType === 'pond_only' && draft.selectedPond) {
+                  // Try to find pond in tournament data first
+                  const pond = tournament.ponds?.find(p => p.pond_id === draft.selectedPond.pond_id);
+                  if (pond) {
+                    setSelectedPond(pond);
+                  } else {
+                    setSelectedPond(draft.selectedPond);
+                  }
+                }
+                
+                // If draft has any data, move to step 2
+                if (draft.bankName || draft.bankAccountNo || draft.selectedAreas?.length > 0 || draft.selectedZone || draft.selectedPond) {
+                  setStep(2);
                   toast.success('Local draft loaded. Your progress was saved!', { duration: 4000 });
                 }
               } catch (e) {
@@ -116,12 +186,22 @@ const PublicRegister = () => {
     const saveDraft = async () => {
       try {
         setSavingDraft(true);
+        const structureType = tournament?.structure_type || 'pond_zone_area';
+        
         const formData = {
           tournament_id: tournament.tournament_id,
           bank_name: bankName,
-          bank_account_no: bankAccountNo,
-          area_ids: selectedAreas.length > 0 ? JSON.stringify(selectedAreas.map(a => a.area_id)) : null
+          bank_account_no: bankAccountNo
         };
+        
+        // Add selections based on structure type
+        if (structureType === 'pond_zone_area' && selectedAreas.length > 0) {
+          formData.area_ids = JSON.stringify(selectedAreas.map(a => a.area_id));
+        } else if (structureType === 'pond_zone' && selectedZone) {
+          formData.zone_id = selectedZone.zone_id;
+        } else if (structureType === 'pond_only' && selectedPond) {
+          formData.pond_id = selectedPond.pond_id;
+        }
 
         await registrationAPI.saveDraft(formData);
         setLastSaved(new Date());
@@ -132,6 +212,9 @@ const PublicRegister = () => {
           bankName,
           bankAccountNo,
           selectedAreas,
+          selectedPond,
+          selectedZone,
+          structureType,
           savedAt: new Date().toISOString()
         }));
       } catch (error) {
@@ -142,6 +225,9 @@ const PublicRegister = () => {
           bankName,
           bankAccountNo,
           selectedAreas,
+          selectedPond,
+          selectedZone,
+          structureType: tournament?.structure_type || 'pond_zone_area',
           savedAt: new Date().toISOString()
         }));
       } finally {
@@ -152,7 +238,7 @@ const PublicRegister = () => {
     // Debounce auto-save (save 2 seconds after user stops typing)
     const timeoutId = setTimeout(saveDraft, 2000);
     return () => clearTimeout(timeoutId);
-  }, [bankName, bankAccountNo, selectedAreas, tournament, isAuthenticated, isUser, step, draftLoaded]);
+  }, [bankName, bankAccountNo, selectedAreas, selectedPond, selectedZone, tournament, isAuthenticated, isUser, step, draftLoaded]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -320,18 +406,49 @@ const PublicRegister = () => {
     }
   };
 
-  const totalPayment = selectedAreas.reduce((sum, a) => sum + parseFloat(a.price), 0);
+  // Calculate total payment based on tournament structure type
+  const calculateTotalPayment = () => {
+    const structureType = tournament?.structure_type || 'pond_zone_area';
+    
+    if (structureType === 'pond_zone_area') {
+      // Calculate from selected areas
+      return selectedAreas.reduce((sum, a) => sum + parseFloat(a.price || 0), 0);
+    } else if (structureType === 'pond_zone' && selectedZone) {
+      // Calculate from selected zone price
+      return parseFloat(selectedZone.price || 0);
+    } else if (structureType === 'pond_only' && selectedPond) {
+      // Calculate from selected pond price
+      return parseFloat(selectedPond.price || 0);
+    }
+    return 0;
+  };
+
+  const totalPayment = calculateTotalPayment();
 
   const handleSubmit = async () => {
-    // Check if tournament has areas - if so, require area selection
-    const hasAreas = tournament.ponds?.some(pond => 
-      pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
-    );
-
-    if (hasAreas && selectedAreas.length === 0) {
-      toast.error('Please select at least one area');
-      return;
+    const structureType = tournament?.structure_type || 'pond_zone_area';
+    
+    // Validate based on structure type
+    if (structureType === 'pond_zone_area') {
+      const hasAreas = tournament.ponds?.some(pond => 
+        pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
+      );
+      if (hasAreas && selectedAreas.length === 0) {
+        toast.error('Please select at least one area');
+        return;
+      }
+    } else if (structureType === 'pond_zone') {
+      if (!selectedZone) {
+        toast.error('Please select a zone');
+        return;
+      }
+    } else if (structureType === 'pond_only') {
+      if (!selectedPond) {
+        toast.error('Please select a pond');
+        return;
+      }
     }
+    
     if (!bankAccountNo) {
       toast.error('Please enter your bank account number');
       return;
@@ -345,9 +462,16 @@ const PublicRegister = () => {
     try {
       const formData = new FormData();
       formData.append('tournament_id', tournament.tournament_id);
-      if (selectedAreas.length > 0) {
+      
+      // Add selections based on structure type
+      if (structureType === 'pond_zone_area' && selectedAreas.length > 0) {
         formData.append('area_ids', JSON.stringify(selectedAreas.map(a => a.area_id)));
+      } else if (structureType === 'pond_zone' && selectedZone) {
+        formData.append('zone_id', selectedZone.zone_id);
+      } else if (structureType === 'pond_only' && selectedPond) {
+        formData.append('pond_id', selectedPond.pond_id);
       }
+      
       formData.append('bank_name', bankName);
       formData.append('bank_account_no', bankAccountNo);
       formData.append('payment_receipt', receipt);
@@ -472,23 +596,53 @@ const PublicRegister = () => {
                     <p className="text-white text-sm md:text-base">
                       {(() => {
                         try {
-                          const dateStr = tournament.start_date.split('T')[0];
+                          // Handle different date formats
+                          let dateStr = tournament.start_date;
+                          if (dateStr.includes('T')) {
+                            dateStr = dateStr.split('T')[0];
+                          }
+                          
                           const timeStr = tournament.tournament_start_time || '00:00';
-                          const dateTime = new Date(`${dateStr}T${timeStr}:00`);
+                          const timeOnly = timeStr.split(':').slice(0, 2).join(':');
+                          
+                          // Create date object
+                          const dateTime = new Date(`${dateStr}T${timeOnly}:00`);
+                          
                           if (!isNaN(dateTime.getTime())) {
-                            return dateTime.toLocaleString('en-MY', {
+                            // Format date
+                            const formattedDate = dateTime.toLocaleDateString('en-MY', {
                               weekday: 'long',
                               year: 'numeric',
                               month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
+                              day: 'numeric'
                             });
+                            
+                            // Format time
+                            const formattedTime = dateTime.toLocaleTimeString('en-MY', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true
+                            });
+                            
+                            return `${formattedDate} at ${formattedTime}`;
                           }
                         } catch (e) {
                           console.error('Error formatting date:', e);
                         }
-                        return `${tournament.start_date} ${tournament.tournament_start_time || ''}`;
+                        // Fallback: try to format just the date part
+                        try {
+                          const dateOnly = new Date(tournament.start_date.split('T')[0]);
+                          if (!isNaN(dateOnly.getTime())) {
+                            return dateOnly.toLocaleDateString('en-MY', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric'
+                            }) + (tournament.tournament_start_time ? ` at ${tournament.tournament_start_time}` : '');
+                          }
+                        } catch (e2) {
+                          console.error('Error formatting fallback date:', e2);
+                        }
+                        return 'Date not available';
                       })()}
                     </p>
                   </div>
@@ -881,11 +1035,113 @@ const PublicRegister = () => {
                         <p className="text-sm text-slate-500">General participation</p>
                       </div>
                     </div>
-                    <div className="bg-forest-50 border border-forest-200 rounded-xl p-4">
-                      <p className="text-slate-700 text-sm">
-                        This tournament does not require area selection. Please proceed with payment details below to complete your registration.
-                      </p>
-                    </div>
+                    {(() => {
+                      const structureType = tournament?.structure_type || 'pond_zone_area';
+                      
+                      // Pond + Zone selection
+                      if (structureType === 'pond_zone') {
+                        return (
+                          <div className="space-y-4">
+                            <div className="bg-forest-50 border border-forest-200 rounded-xl p-4 mb-4">
+                              <p className="text-slate-700 text-sm mb-3">
+                                Please select a zone to register for this tournament.
+                              </p>
+                            </div>
+                            {tournament.ponds?.map((pond) => (
+                              <div key={pond.pond_id} className="mb-4">
+                                <h3 className="font-semibold text-slate-700 mb-3">{pond.pond_name}</h3>
+                                {pond.zones?.length > 0 ? (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {pond.zones.map((zone) => {
+                                      const isSelected = selectedZone?.zone_id === zone.zone_id;
+                                      return (
+                                        <motion.button
+                                          key={zone.zone_id}
+                                          onClick={() => setSelectedZone({ ...zone, pond_name: pond.pond_name })}
+                                          className={`p-4 rounded-xl border-2 transition-all text-left ${
+                                            isSelected
+                                              ? 'border-forest-500 bg-forest-50'
+                                              : 'border-slate-200 hover:border-forest-300 hover:bg-slate-50'
+                                          }`}
+                                          whileHover={{ scale: 1.02 }}
+                                          whileTap={{ scale: 0.98 }}
+                                        >
+                                          <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                              <div 
+                                                className="w-4 h-4 rounded"
+                                                style={{ backgroundColor: zone.color }}
+                                              />
+                                              <span className="font-medium text-slate-800">{zone.zone_name}</span>
+                                            </div>
+                                            <span className="font-bold text-forest-600">
+                                              RM {parseFloat(zone.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </span>
+                                          </div>
+                                        </motion.button>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <p className="text-slate-500 text-sm">No zones available</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      }
+                      
+                      // Pond-only selection
+                      if (structureType === 'pond_only') {
+                        return (
+                          <div className="space-y-4">
+                            <div className="bg-forest-50 border border-forest-200 rounded-xl p-4 mb-4">
+                              <p className="text-slate-700 text-sm mb-3">
+                                Please select a pond to register for this tournament.
+                              </p>
+                            </div>
+                            {tournament.ponds?.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {tournament.ponds.map((pond) => {
+                                  const isSelected = selectedPond?.pond_id === pond.pond_id;
+                                  return (
+                                    <motion.button
+                                      key={pond.pond_id}
+                                      onClick={() => setSelectedPond(pond)}
+                                      className={`p-4 rounded-xl border-2 transition-all text-left ${
+                                        isSelected
+                                          ? 'border-forest-500 bg-forest-50'
+                                          : 'border-slate-200 hover:border-forest-300 hover:bg-slate-50'
+                                      }`}
+                                      whileHover={{ scale: 1.02 }}
+                                      whileTap={{ scale: 0.98 }}
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <span className="font-medium text-slate-800">{pond.pond_name}</span>
+                                        <span className="font-bold text-forest-600">
+                                          RM {parseFloat(pond.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                      </div>
+                                    </motion.button>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-slate-500 text-sm">No ponds available</p>
+                            )}
+                          </div>
+                        );
+                      }
+                      
+                      // Default message for tournaments without structure
+                      return (
+                        <div className="bg-forest-50 border border-forest-200 rounded-xl p-4">
+                          <p className="text-slate-700 text-sm">
+                            This tournament does not require area selection. Please proceed with payment details below to complete your registration.
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
 
@@ -899,32 +1155,97 @@ const PublicRegister = () => {
                     <TrophyIcon className="w-5 h-5 text-forest-600" />
                     Registration Summary
                   </h3>
-                  {selectedAreas.length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-slate-500 text-sm">No areas selected yet</p>
-                      {!tournament.ponds?.some(pond => 
-                        pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
-                      ) && (
-                        <p className="text-slate-400 text-xs mt-2">This tournament doesn't require area selection</p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-2 mb-4">
-                      {selectedAreas.map((area) => (
-                        <div key={area.key} className="flex justify-between items-center p-2 bg-slate-50 rounded-lg text-sm">
-                          <div className="flex-1 min-w-0">
-                            <span className="font-medium text-slate-800">{area.pond_name}</span>
-                            <span className="text-slate-500"> - {area.zone_name} - Area {area.area_number}</span>
+                  {(() => {
+                    const structureType = tournament?.structure_type || 'pond_zone_area';
+                    
+                    // For pond_zone_area structure
+                    if (structureType === 'pond_zone_area') {
+                      if (selectedAreas.length === 0) {
+                        return (
+                          <div className="text-center py-4">
+                            <p className="text-slate-500 text-sm">No areas selected yet</p>
+                            <p className="text-slate-400 text-xs mt-2">Select areas from the list above</p>
                           </div>
-                          <span className="font-semibold text-ocean-600 ml-2">RM {parseFloat(area.price).toLocaleString()}</span>
+                        );
+                      }
+                      return (
+                        <div className="space-y-2 mb-4">
+                          {selectedAreas.map((area) => (
+                            <div key={area.key} className="flex justify-between items-center p-2 bg-slate-50 rounded-lg text-sm">
+                              <div className="flex-1 min-w-0">
+                                <span className="font-medium text-slate-800">{area.pond_name}</span>
+                                <span className="text-slate-500"> - {area.zone_name} - Area {area.area_number}</span>
+                              </div>
+                              <span className="font-semibold text-ocean-600 ml-2">RM {parseFloat(area.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      );
+                    }
+                    
+                    // For pond_zone structure
+                    if (structureType === 'pond_zone') {
+                      if (selectedZone) {
+                        return (
+                          <div className="space-y-2 mb-4">
+                            <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg text-sm">
+                              <div className="flex-1 min-w-0">
+                                <span className="font-medium text-slate-800">{selectedZone.pond_name || 'Pond'}</span>
+                                <span className="text-slate-500"> - {selectedZone.zone_name}</span>
+                              </div>
+                              <span className="font-semibold text-ocean-600 ml-2">RM {parseFloat(selectedZone.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="text-center py-4">
+                          <p className="text-slate-500 text-sm">No zone selected yet</p>
+                          <p className="text-slate-400 text-xs mt-2">This tournament requires zone selection</p>
+                        </div>
+                      );
+                    }
+                    
+                    // For pond_only structure
+                    if (structureType === 'pond_only') {
+                      if (selectedPond) {
+                        return (
+                          <div className="space-y-2 mb-4">
+                            <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg text-sm">
+                              <div className="flex-1 min-w-0">
+                                <span className="font-medium text-slate-800">{selectedPond.pond_name}</span>
+                              </div>
+                              <span className="font-semibold text-ocean-600 ml-2">RM {parseFloat(selectedPond.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="text-center py-4">
+                          <p className="text-slate-500 text-sm">No pond selected yet</p>
+                          <p className="text-slate-400 text-xs mt-2">This tournament requires pond selection</p>
+                        </div>
+                      );
+                    }
+                    
+                    // Default fallback
+                    return (
+                      <div className="text-center py-4">
+                        <p className="text-slate-500 text-sm">No areas selected yet</p>
+                        {!tournament.ponds?.some(pond => 
+                          pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
+                        ) && (
+                          <p className="text-slate-400 text-xs mt-2">This tournament doesn't require area selection</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                   <div className="border-t border-slate-200 pt-4 mt-4">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-slate-700">Total Payment</span>
-                      <span className="font-bold text-xl text-ocean-600">RM {totalPayment.toLocaleString()}</span>
+                      <span className="font-bold text-xl text-ocean-600">
+                        RM {totalPayment.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1018,9 +1339,21 @@ const PublicRegister = () => {
                 {/* Submit */}
                 <motion.button
                   onClick={handleSubmit}
-                  disabled={submitting || (tournament.ponds?.some(pond => 
-                    pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
-                  ) && selectedAreas.length === 0)}
+                  disabled={(() => {
+                    if (submitting) return true;
+                    const structureType = tournament?.structure_type || 'pond_zone_area';
+                    if (structureType === 'pond_zone_area') {
+                      const hasAreas = tournament.ponds?.some(pond => 
+                        pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
+                      );
+                      return hasAreas && selectedAreas.length === 0;
+                    } else if (structureType === 'pond_zone') {
+                      return !selectedZone;
+                    } else if (structureType === 'pond_only') {
+                      return !selectedPond;
+                    }
+                    return false;
+                  })()}
                   className="btn-primary w-full py-4 text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   whileHover={{ scale: submitting ? 1 : 1.02 }}
                   whileTap={{ scale: submitting ? 1 : 0.98 }}
