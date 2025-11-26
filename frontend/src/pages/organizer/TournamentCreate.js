@@ -97,7 +97,7 @@ const TournamentCreate = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-ocean-50/30 to-forest-50/30">
       {/* Header Section */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
           <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => navigate('/organizer/tournaments')}
@@ -121,19 +121,19 @@ const TournamentCreate = () => {
       </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+          <div className="grid lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
             {/* Form Section - Takes 2 columns on large screens */}
             <motion.form
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               onSubmit={handleSubmit}
-              className="lg:col-span-2 space-y-4 sm:space-y-6"
+              className="lg:col-span-2 space-y-3 sm:space-y-4"
             >
               {/* Banner Image Card */}
-              <div className="card p-4 sm:p-6">
-                <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
+              <div className="card p-3 sm:p-4">
+                <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2">
                   Tournament Banner
                   <span className="text-slate-400 font-normal ml-2 text-xs sm:text-sm">(Optional)</span>
                 </label>
@@ -178,8 +178,8 @@ const TournamentCreate = () => {
               </div>
 
               {/* Payment Details Image Card */}
-              <div className="card p-4 sm:p-6">
-                <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
+              <div className="card p-3 sm:p-4">
+                <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2">
                   Payment Details Image
                   <span className="text-slate-400 font-normal ml-1 sm:ml-2 text-xs sm:text-sm block sm:inline mt-1 sm:mt-0">(Optional - Bank account info, QR code, etc.)</span>
                 </label>
@@ -224,7 +224,7 @@ const TournamentCreate = () => {
               </div>
 
               {/* Basic Info Card */}
-              <div className="card p-4 sm:p-6 space-y-4 sm:space-y-5">
+              <div className="card p-3 sm:p-4 space-y-3 sm:space-y-4">
                 <h2 className="text-base sm:text-lg font-semibold text-slate-800 flex items-center gap-2">
                   <TrophyIcon className="w-5 h-5 text-forest-500 flex-shrink-0" />
                   Basic Information
@@ -267,9 +267,9 @@ const TournamentCreate = () => {
 
                 {/* Tournament Dates */}
                 <div>
-                  <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
-                    Tournament Dates <span className="text-red-500">*</span>
-                  </label>
+                <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2">
+                  Tournament Dates <span className="text-red-500">*</span>
+                </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-slate-600 mb-1.5">
@@ -306,9 +306,9 @@ const TournamentCreate = () => {
 
                 {/* Tournament Times */}
                 <div>
-                  <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
-                    Tournament Times
-                  </label>
+                <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2">
+                  Tournament Times
+                </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-slate-600 mb-1.5">
@@ -343,9 +343,9 @@ const TournamentCreate = () => {
 
                 {/* Registration Dates */}
                 <div>
-                  <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-3">
-                    Registration Period
-                  </label>
+                <label className="block text-sm sm:text-base font-semibold text-slate-700 mb-2">
+                  Registration Period
+                </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-slate-600 mb-1.5">
@@ -386,8 +386,8 @@ const TournamentCreate = () => {
                   <p className="text-xs sm:text-sm text-slate-500 mb-3">
                     Choose how participants will register: by pond, by zone, or by specific area
                   </p>
-                  <div className="space-y-2 sm:space-y-3">
-                    <label className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border-2 rounded-xl cursor-pointer transition-all active:bg-forest-50/50 hover:border-forest-500 hover:bg-forest-50/50 touch-manipulation"
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 border-2 rounded-xl cursor-pointer transition-all active:bg-forest-50/50 hover:border-forest-500 hover:bg-forest-50/50 touch-manipulation"
                       style={{ borderColor: formData.structure_type === 'pond_only' ? '#10b981' : '#e2e8f0' }}>
                       <input
                         type="radio"
@@ -480,18 +480,18 @@ const TournamentCreate = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="hidden lg:block space-y-4 sm:space-y-6"
+              className="hidden lg:block space-y-3 sm:space-y-4"
             >
               {/* What's Next Card */}
-              <div className="card p-4 sm:p-5 lg:p-6 bg-gradient-to-br from-forest-50 to-ocean-50 border-forest-200">
+              <div className="card p-3 sm:p-4 lg:p-5 bg-gradient-to-br from-forest-50 to-ocean-50 border-forest-200">
                 <h3 className="font-semibold text-sm sm:text-base text-forest-800 mb-2 sm:mb-3 flex items-center gap-2">
                   <span className="text-lg sm:text-xl">📋</span>
                   What's Next?
                 </h3>
-                <p className="text-forest-700 text-xs sm:text-sm mb-3 sm:mb-4">
+                <p className="text-forest-700 text-xs sm:text-sm mb-2 sm:mb-3">
                   After creating the tournament, you'll be able to:
                 </p>
-                <ul className="text-forest-700 text-xs sm:text-sm space-y-2 sm:space-y-3">
+                <ul className="text-forest-700 text-xs sm:text-sm space-y-2">
                   <li className="flex items-start gap-3">
                     <span className="w-6 h-6 rounded-full bg-forest-200 text-forest-700 flex items-center justify-center text-xs font-semibold flex-shrink-0">1</span>
                     <span>Add ponds and configure fishing zones/areas</span>
@@ -512,12 +512,12 @@ const TournamentCreate = () => {
               </div>
 
               {/* Tips Card */}
-              <div className="card p-4 sm:p-5 lg:p-6 bg-gradient-to-br from-ocean-50 to-slate-50 border-ocean-200">
+              <div className="card p-3 sm:p-4 lg:p-5 bg-gradient-to-br from-ocean-50 to-slate-50 border-ocean-200">
                 <h3 className="font-semibold text-sm sm:text-base text-ocean-800 mb-2 sm:mb-3 flex items-center gap-2">
                   <span className="text-lg sm:text-xl">💡</span>
                   Pro Tips
                 </h3>
-                <ul className="text-ocean-700 text-xs sm:text-sm space-y-1.5 sm:space-y-2">
+                <ul className="text-ocean-700 text-xs sm:text-sm space-y-1.5">
                   <li className="flex items-start gap-2">
                     <span className="text-ocean-500">•</span>
                     <span>Use a clear, descriptive tournament name</span>
