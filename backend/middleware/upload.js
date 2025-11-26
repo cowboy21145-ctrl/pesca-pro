@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 
 // Ensure upload directories exist
-const uploadDirs = ['uploads', 'uploads/receipts', 'uploads/catches', 'uploads/layouts', 'uploads/banners'];
+const uploadDirs = ['uploads', 'uploads/receipts', 'uploads/catches', 'uploads/layouts', 'uploads/banners', 'uploads/payment-details'];
 uploadDirs.forEach(dir => {
   const dirPath = path.join(__dirname, '..', dir);
   if (!fs.existsSync(dirPath)) {
@@ -25,6 +25,8 @@ const storage = multer.diskStorage({
       uploadPath = 'uploads/layouts/';
     } else if (file.fieldname === 'banner_image') {
       uploadPath = 'uploads/banners/';
+    } else if (file.fieldname === 'payment_details_image') {
+      uploadPath = 'uploads/payment-details/';
     }
     
     cb(null, path.join(__dirname, '..', uploadPath));

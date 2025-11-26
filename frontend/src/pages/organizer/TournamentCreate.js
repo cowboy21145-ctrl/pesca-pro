@@ -32,6 +32,9 @@ const TournamentCreate = () => {
   });
   const [banner, setBanner] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [paymentDetails, setPaymentDetails] = useState(null);
+  const [paymentPreview, setPaymentPreview] = useState(null);
+  const paymentInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
 
   const handleImageChange = (e) => {
@@ -39,6 +42,14 @@ const TournamentCreate = () => {
     if (file) {
       setBanner(file);
       setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handlePaymentDetailsChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPaymentDetails(file);
+      setPaymentPreview(URL.createObjectURL(file));
     }
   };
 
@@ -66,6 +77,9 @@ const TournamentCreate = () => {
       });
       if (banner) {
         submitData.append('banner_image', banner);
+      }
+      if (paymentDetails) {
+        submitData.append('payment_details_image', paymentDetails);
       }
 
       const response = await tournamentAPI.create(submitData);
@@ -161,6 +175,52 @@ const TournamentCreate = () => {
                     </div>
                     <p className="text-slate-600 font-medium text-xs md:text-sm lg:text-base">Click to upload banner</p>
                     <p className="text-slate-400 text-xs md:text-sm mt-1">Recommended: 1200 x 400 pixels</p>
+                  </button>
+                )}
+              </div>
+
+              {/* Payment Details Image Card */}
+              <div className="card p-4 md:p-6">
+                <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  Payment Details Image
+                  <span className="text-slate-400 font-normal ml-2">(Optional - Bank account info, QR code, etc.)</span>
+                </label>
+                <input
+                  type="file"
+                  ref={paymentInputRef}
+                  onChange={handlePaymentDetailsChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                
+                {paymentPreview ? (
+                  <div className="relative group">
+                    <img
+                      src={paymentPreview}
+                      alt="Payment Details Preview"
+                      className="w-full max-w-md mx-auto rounded-xl border-2 border-slate-200"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={() => paymentInputRef.current?.click()}
+                        className="px-6 py-3 bg-white rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors shadow-lg"
+                      >
+                        Change Image
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => paymentInputRef.current?.click()}
+                    className="w-full max-w-md mx-auto border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center hover:border-forest-500 hover:bg-forest-50/50 transition-all duration-300 group min-h-[150px] touch-manipulation"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-forest-100 flex items-center justify-center mb-3 transition-colors">
+                      <PhotoIcon className="w-6 h-6 text-slate-400 group-hover:text-forest-500 transition-colors" />
+                    </div>
+                    <p className="text-slate-600 font-medium text-xs md:text-sm">Click to upload payment details</p>
+                    <p className="text-slate-400 text-xs mt-1">Bank account info, QR code, etc.</p>
                   </button>
                 )}
               </div>

@@ -12,7 +12,10 @@ const generateUniqueLink = () => {
 };
 
 // Create Tournament (Organizer only)
-router.post('/', authenticate, isOrganizer, upload.single('banner_image'), [
+router.post('/', authenticate, isOrganizer, upload.fields([
+  { name: 'banner_image', maxCount: 1 },
+  { name: 'payment_details_image', maxCount: 1 }
+]), [
   body('name').trim().notEmpty().withMessage('Tournament name is required'),
   body('start_date').isDate().withMessage('Valid start date is required'),
   body('end_date').isDate().withMessage('Valid end date is required')
@@ -32,17 +35,18 @@ router.post('/', authenticate, isOrganizer, upload.single('banner_image'), [
     
     const registration_link = generateUniqueLink();
     const leaderboard_link = generateUniqueLink();
-    const banner_image = req.file ? `/uploads/banners/${req.file.filename}` : null;
+    const banner_image = req.files?.banner_image?.[0] ? `/uploads/banners/${req.files.banner_image[0].filename}` : null;
+    const payment_details_image = req.files?.payment_details_image?.[0] ? `/uploads/payment-details/${req.files.payment_details_image[0].filename}` : null;
 
     const [result] = await pool.query(
       `INSERT INTO tournaments (organizer_id, name, location, start_date, end_date, 
         tournament_start_time, tournament_end_time, registration_start_date, registration_end_date,
-        registration_link, leaderboard_link, description, banner_image)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        registration_link, leaderboard_link, description, banner_image, payment_details_image)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [organizer_id, name, location, start_date, end_date, 
        tournament_start_time || null, tournament_end_time || null,
        registration_start_date || null, registration_end_date || null,
-       registration_link, leaderboard_link, description, banner_image]
+       registration_link, leaderboard_link, description, banner_image, payment_details_image]
     );
 
     res.status(201).json({
@@ -56,7 +60,8 @@ router.post('/', authenticate, isOrganizer, upload.single('banner_image'), [
         registration_link,
         leaderboard_link,
         status: 'draft',
-        banner_image
+        banner_image,
+        payment_details_image
       }
     });
   } catch (error) {
@@ -234,7 +239,10 @@ router.patch('/:id/status', authenticate, isOrganizer, async (req, res) => {
 });
 
 // Update tournament
-router.put('/:id', authenticate, isOrganizer, upload.single('banner_image'), async (req, res) => {
+router.put('/:id', authenticate, isOrganizer, upload.fields([
+  { name: 'banner_image', maxCount: 1 },
+  { name: 'payment_details_image', maxCount: 1 }
+]), async (req, res) => {
   try {
     const { 
       name, location, start_date, end_date, description,
@@ -252,19 +260,20 @@ router.put('/:id', authenticate, isOrganizer, upload.single('banner_image'), asy
       return res.status(404).json({ message: 'Tournament not found or unauthorized' });
     }
 
-    const banner_image = req.file ? `/uploads/banners/${req.file.filename}` : tournaments[0].banner_image;
+    const banner_image = req.files?.banner_image?.[0] ? `/uploads/banners/${req.files.banner_image[0].filename}` : tournaments[0].banner_image;
+    const payment_details_image = req.files?.payment_details_image?.[0] ? `/uploads/payment-details/${req.files.payment_details_image[0].filename}` : tournaments[0].payment_details_image;
 
     await pool.query(
       `UPDATE tournaments SET 
         name = ?, location = ?, start_date = ?, end_date = ?, 
         tournament_start_time = ?, tournament_end_time = ?,
         registration_start_date = ?, registration_end_date = ?,
-        description = ?, banner_image = ?
+        description = ?, banner_image = ?, payment_details_image = ?
        WHERE tournament_id = ?`,
       [name, location, start_date, end_date, 
        tournament_start_time || null, tournament_end_time || null,
        registration_start_date || null, registration_end_date || null,
-       description, banner_image, req.params.id]
+       description, banner_image, payment_details_image, req.params.id]
     );
 
     res.json({ message: 'Tournament updated successfully' });

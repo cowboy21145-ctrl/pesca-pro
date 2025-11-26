@@ -302,7 +302,8 @@ const PondManager = () => {
               {selectedPond.zones?.length === 0 ? (
                 <div className="text-center py-12 bg-slate-50 rounded-xl">
                   <MapPinIcon className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                  <p className="text-slate-500">No zones yet. Add zones to start configuring areas.</p>
+                  <p className="text-slate-500 mb-2">No zones configured yet.</p>
+                  <p className="text-slate-400 text-sm">Zones and areas are optional. You can use this pond as-is, or add zones and areas for area-based registration.</p>
                 </div>
               ) : (
                 <div className="space-y-4">

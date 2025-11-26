@@ -124,13 +124,25 @@ api.interceptors.response.use(
 
     // Handle 401 only for non-auth endpoints (don't redirect on login failure)
     if (status === 401 && !isAuthEndpoint) {
-      // Token expired or invalid - clear storage and redirect
+      // Token expired or invalid - clear storage and show message
       const currentPath = window.location.pathname;
-      if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+      if (!currentPath.includes('/login') && !currentPath.includes('/register') && !currentPath.includes('/t/') && !currentPath.includes('/lb/')) {
+        const errorMessage = error.response?.data?.message || 'Your session has expired';
+        
+        // Store error message to show after redirect
+        sessionStorage.setItem('authError', errorMessage + '. Please login again.');
+        
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('role');
-        window.location.href = '/login';
+        
+        // Redirect to appropriate login page
+        const role = localStorage.getItem('role');
+        if (role === 'organizer') {
+          window.location.href = '/organizer/login';
+        } else {
+          window.location.href = '/login';
+        }
       }
     }
 
@@ -198,6 +210,9 @@ export const areaAPI = {
 // Registration API
 export const registrationAPI = {
   getMyRegistrations: () => api.get('/registrations/my-registrations'),
+  getMyDrafts: () => api.get('/registrations/my-drafts'),
+  getDraft: (tournamentId) => api.get(`/registrations/draft/${tournamentId}`),
+  saveDraft: (data) => api.post('/registrations/draft', data),
   getByTournament: (tournamentId) => api.get(`/registrations/tournament/${tournamentId}`),
   getById: (id) => api.get(`/registrations/${id}`),
   create: (data) => api.post('/registrations', data, {

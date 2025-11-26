@@ -31,6 +31,9 @@ const TournamentEdit = () => {
   });
   const [banner, setBanner] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [paymentDetails, setPaymentDetails] = useState(null);
+  const [paymentPreview, setPaymentPreview] = useState(null);
+  const paymentInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -56,6 +59,9 @@ const TournamentEdit = () => {
       if (t.banner_image) {
         setPreview(getImageUrl(t.banner_image));
       }
+      if (t.payment_details_image) {
+        setPaymentPreview(getImageUrl(t.payment_details_image));
+      }
     } catch (error) {
       toast.error('Failed to load tournament');
       navigate('/organizer/tournaments');
@@ -72,6 +78,14 @@ const TournamentEdit = () => {
     }
   };
 
+  const handlePaymentDetailsChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPaymentDetails(file);
+      setPaymentPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -83,6 +97,9 @@ const TournamentEdit = () => {
       });
       if (banner) {
         submitData.append('banner_image', banner);
+      }
+      if (paymentDetails) {
+        submitData.append('payment_details_image', paymentDetails);
       }
 
       await tournamentAPI.update(id, submitData);
@@ -167,6 +184,47 @@ const TournamentEdit = () => {
             >
               <PhotoIcon className="w-12 h-12 text-slate-400 group-hover:text-forest-500 mb-2" />
               <p className="text-slate-600 font-medium">Click to upload banner</p>
+            </button>
+          )}
+        </div>
+
+        {/* Payment Details Image */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Payment Details Image
+            <span className="text-slate-400 font-normal ml-2">(Optional - Bank account info, QR code, etc.)</span>
+          </label>
+          <input
+            type="file"
+            ref={paymentInputRef}
+            onChange={handlePaymentDetailsChange}
+            accept="image/*"
+            className="hidden"
+          />
+          
+          {paymentPreview ? (
+            <div className="relative">
+              <img
+                src={paymentPreview}
+                alt="Payment Details Preview"
+                className="w-full max-w-md mx-auto rounded-xl border-2 border-slate-200"
+              />
+              <button
+                type="button"
+                onClick={() => paymentInputRef.current?.click()}
+                className="absolute bottom-4 right-4 px-4 py-2 bg-white/90 rounded-lg text-sm font-medium hover:bg-white transition-colors"
+              >
+                Change Image
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => paymentInputRef.current?.click()}
+              className="w-full max-w-md mx-auto border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center hover:border-forest-500 hover:bg-forest-50/50 transition-colors group"
+            >
+              <PhotoIcon className="w-12 h-12 text-slate-400 group-hover:text-forest-500 mb-2" />
+              <p className="text-slate-600 font-medium">Click to upload payment details</p>
             </button>
           )}
         </div>

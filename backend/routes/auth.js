@@ -25,7 +25,7 @@ router.post('/user/register', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { full_name, mobile_no, email, password, bank_account_no } = req.body;
+    const { full_name, mobile_no, email, password, bank_account_no, bank_name } = req.body;
 
     // Check if user exists
     const [existingUsers] = await pool.query(
@@ -42,8 +42,8 @@ router.post('/user/register', [
 
     // Create user
     const [result] = await pool.query(
-      'INSERT INTO users (full_name, mobile_no, email, password, bank_account_no) VALUES (?, ?, ?, ?, ?)',
-      [full_name, mobile_no, email || null, hashedPassword, bank_account_no || null]
+      'INSERT INTO users (full_name, mobile_no, email, password, bank_account_no, bank_name) VALUES (?, ?, ?, ?, ?, ?)',
+      [full_name, mobile_no, email || null, hashedPassword, bank_account_no || null, bank_name || null]
     );
 
     const token = generateToken({
@@ -197,6 +197,46 @@ router.post('/organizer/register', [
   } catch (error) {
     console.error('Organizer registration error:', error);
     res.status(500).json({ message: 'Server error during registration' });
+  }
+});
+
+// Validate Token
+router.get('/validate', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ valid: false, message: 'No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret');
+      
+      // Optionally verify user still exists in database
+      if (decoded.role === 'user') {
+        const [users] = await pool.query('SELECT user_id FROM users WHERE user_id = ?', [decoded.id]);
+        if (users.length === 0) {
+          return res.status(401).json({ valid: false, message: 'User not found' });
+        }
+      } else if (decoded.role === 'organizer') {
+        const [organizers] = await pool.query('SELECT organizer_id FROM organizers WHERE organizer_id = ?', [decoded.id]);
+        if (organizers.length === 0) {
+          return res.status(401).json({ valid: false, message: 'Organizer not found' });
+        }
+      }
+      
+      res.json({ valid: true, user: decoded });
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({ valid: false, message: 'Token expired' });
+      }
+      return res.status(401).json({ valid: false, message: 'Invalid token' });
+    }
+  } catch (error) {
+    console.error('Token validation error:', error);
+    res.status(500).json({ valid: false, message: 'Server error validating token' });
   }
 });
 

@@ -8,10 +8,11 @@ const upload = require('../middleware/upload');
 // Create Registration with Area Selections
 router.post('/', authenticate, isUser, upload.single('payment_receipt'), [
   body('tournament_id').isInt().withMessage('Tournament ID is required'),
-  body('area_ids').custom(value => {
+  body('area_ids').optional().custom(value => {
+    if (!value) return true; // Allow empty/undefined for pond-only tournaments
     const parsed = typeof value === 'string' ? JSON.parse(value) : value;
-    return Array.isArray(parsed) && parsed.length > 0;
-  }).withMessage('At least one area must be selected'),
+    return Array.isArray(parsed);
+  }).withMessage('Area IDs must be an array'),
   body('bank_account_no').trim().notEmpty().withMessage('Bank account number is required')
 ], async (req, res) => {
   const connection = await pool.getConnection();
@@ -22,15 +23,15 @@ router.post('/', authenticate, isUser, upload.single('payment_receipt'), [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { tournament_id, bank_account_no, notes } = req.body;
-    const area_ids = typeof req.body.area_ids === 'string' 
-      ? JSON.parse(req.body.area_ids) 
-      : req.body.area_ids;
+    const { tournament_id, bank_account_no, bank_name, notes } = req.body;
+    const area_ids = req.body.area_ids 
+      ? (typeof req.body.area_ids === 'string' ? JSON.parse(req.body.area_ids) : req.body.area_ids)
+      : [];
     const user_id = req.user.id;
 
     await connection.beginTransaction();
 
-    // Check if already registered
+    // Check if already registered (not draft)
     const [existingReg] = await connection.query(
       'SELECT registration_id FROM registrations WHERE user_id = ? AND tournament_id = ? AND status IN ("pending", "confirmed")',
       [user_id, tournament_id]
@@ -41,48 +42,77 @@ router.post('/', authenticate, isUser, upload.single('payment_receipt'), [
       return res.status(400).json({ message: 'You have already registered for this tournament' });
     }
 
-    // Verify areas are available
-    const [areas] = await connection.query(
-      `SELECT a.area_id, a.price, a.is_available,
-        (SELECT COUNT(*) FROM area_selections s 
-         JOIN registrations r ON s.registration_id = r.registration_id 
-         WHERE s.area_id = a.area_id AND r.status IN ('pending', 'confirmed')) as selection_count
-       FROM areas a
-       WHERE a.area_id IN (?)`,
-      [area_ids]
+    // Check if draft exists - if so, update it instead of creating new
+    const [draftReg] = await connection.query(
+      'SELECT registration_id FROM registrations WHERE user_id = ? AND tournament_id = ? AND status = "draft"',
+      [user_id, tournament_id]
     );
 
-    if (areas.length !== area_ids.length) {
-      await connection.rollback();
-      return res.status(400).json({ message: 'Some selected areas do not exist' });
-    }
+    let total_payment = 0;
+    let areas = [];
 
-    const unavailable = areas.filter(a => !a.is_available || a.selection_count > 0);
-    if (unavailable.length > 0) {
-      await connection.rollback();
-      return res.status(400).json({ message: 'Some selected areas are no longer available' });
-    }
+    // Only verify areas if they are provided
+    if (area_ids && area_ids.length > 0) {
+      // Verify areas are available
+      const [areaResults] = await connection.query(
+        `SELECT a.area_id, a.price, a.is_available,
+          (SELECT COUNT(*) FROM area_selections s 
+           JOIN registrations r ON s.registration_id = r.registration_id 
+           WHERE s.area_id = a.area_id AND r.status IN ('pending', 'confirmed')) as selection_count
+         FROM areas a
+         WHERE a.area_id IN (?)`,
+        [area_ids]
+      );
 
-    // Calculate total payment
-    const total_payment = areas.reduce((sum, a) => sum + parseFloat(a.price), 0);
+      if (areaResults.length !== area_ids.length) {
+        await connection.rollback();
+        return res.status(400).json({ message: 'Some selected areas do not exist' });
+      }
+
+      const unavailable = areaResults.filter(a => !a.is_available || a.selection_count > 0);
+      if (unavailable.length > 0) {
+        await connection.rollback();
+        return res.status(400).json({ message: 'Some selected areas are no longer available' });
+      }
+
+      areas = areaResults;
+      // Calculate total payment
+      total_payment = areas.reduce((sum, a) => sum + parseFloat(a.price), 0);
+    }
 
     const payment_receipt = req.file ? `/uploads/receipts/${req.file.filename}` : null;
 
-    // Create registration
-    const [regResult] = await connection.query(
-      `INSERT INTO registrations (user_id, tournament_id, total_payment, payment_receipt, bank_account_no, notes, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
-      [user_id, tournament_id, total_payment, payment_receipt, bank_account_no, notes]
-    );
+    let registration_id;
 
-    const registration_id = regResult.insertId;
+    // Update draft or create new registration
+    if (draftReg.length > 0) {
+      registration_id = draftReg[0].registration_id;
+      // Update draft to pending
+      await connection.query(
+        `UPDATE registrations SET total_payment = ?, payment_receipt = ?, bank_account_no = ?, bank_name = ?, notes = ?, status = 'pending'
+         WHERE registration_id = ?`,
+        [total_payment, payment_receipt, bank_account_no, bank_name || null, notes, registration_id]
+      );
+      // Delete old area selections
+      await connection.query('DELETE FROM area_selections WHERE registration_id = ?', [registration_id]);
+    } else {
+      // Create new registration
+      const [regResult] = await connection.query(
+        `INSERT INTO registrations (user_id, tournament_id, total_payment, payment_receipt, bank_account_no, bank_name, notes, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
+        [user_id, tournament_id, total_payment, payment_receipt, bank_account_no, bank_name || null, notes]
+      );
+      registration_id = regResult.insertId;
+    }
 
-    // Create area selections
-    const selectionValues = area_ids.map(area_id => [registration_id, area_id]);
-    await connection.query(
-      'INSERT INTO area_selections (registration_id, area_id) VALUES ?',
-      [selectionValues]
-    );
+    // Create area selections only if areas were selected
+    if (area_ids && area_ids.length > 0) {
+      const selectionValues = area_ids.map(area_id => [registration_id, area_id]);
+      await connection.query(
+        'INSERT INTO area_selections (registration_id, area_id) VALUES ?',
+        [selectionValues]
+      );
+    }
 
     await connection.commit();
 
@@ -93,7 +123,7 @@ router.post('/', authenticate, isUser, upload.single('payment_receipt'), [
         tournament_id,
         total_payment,
         status: 'pending',
-        area_count: area_ids.length
+        area_count: area_ids ? area_ids.length : 0
       }
     });
   } catch (error) {
@@ -105,7 +135,129 @@ router.post('/', authenticate, isUser, upload.single('payment_receipt'), [
   }
 });
 
-// Get user's registrations
+// Save/Update Draft Registration
+router.post('/draft', authenticate, isUser, [
+  body('tournament_id').isInt().withMessage('Tournament ID is required')
+], async (req, res) => {
+  const connection = await pool.getConnection();
+  
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { tournament_id, bank_account_no, bank_name, area_ids } = req.body;
+    const user_id = req.user.id;
+
+    await connection.beginTransaction();
+
+    // Calculate total payment from areas
+    let total_payment = 0;
+    if (area_ids && area_ids.length > 0) {
+      const areaIdsArray = typeof area_ids === 'string' ? JSON.parse(area_ids) : area_ids;
+      const [areas] = await connection.query(
+        'SELECT area_id, price FROM areas WHERE area_id IN (?)',
+        [areaIdsArray]
+      );
+      total_payment = areas.reduce((sum, a) => sum + parseFloat(a.price), 0);
+    }
+
+    // Check if draft exists
+    const [draftReg] = await connection.query(
+      'SELECT registration_id FROM registrations WHERE user_id = ? AND tournament_id = ? AND status = "draft"',
+      [user_id, tournament_id]
+    );
+
+    let registration_id;
+
+    if (draftReg.length > 0) {
+      // Update existing draft
+      registration_id = draftReg[0].registration_id;
+      await connection.query(
+        `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE registration_id = ?`,
+        [total_payment, bank_account_no || null, bank_name || null, registration_id]
+      );
+      // Delete old area selections
+      await connection.query('DELETE FROM area_selections WHERE registration_id = ?', [registration_id]);
+    } else {
+      // Create new draft
+      const [regResult] = await connection.query(
+        `INSERT INTO registrations (user_id, tournament_id, total_payment, bank_account_no, bank_name, status)
+         VALUES (?, ?, ?, ?, ?, 'draft')`,
+        [user_id, tournament_id, total_payment, bank_account_no || null, bank_name || null]
+      );
+      registration_id = regResult.insertId;
+    }
+
+    // Add area selections if provided
+    if (area_ids && area_ids.length > 0) {
+      const areaIdsArray = typeof area_ids === 'string' ? JSON.parse(area_ids) : area_ids;
+      const selectionValues = areaIdsArray.map(area_id => [registration_id, area_id]);
+      if (selectionValues.length > 0) {
+        await connection.query(
+          'INSERT INTO area_selections (registration_id, area_id) VALUES ?',
+          [selectionValues]
+        );
+      }
+    }
+
+    await connection.commit();
+
+    res.json({
+      message: 'Draft saved successfully',
+      registration_id,
+      tournament_id
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Save draft error:', error);
+    res.status(500).json({ message: 'Server error saving draft' });
+  } finally {
+    connection.release();
+  }
+});
+
+// Get draft registration for tournament
+router.get('/draft/:tournamentId', authenticate, isUser, async (req, res) => {
+  try {
+    const [registrations] = await pool.query(
+      `SELECT r.*, t.name as tournament_name, t.registration_link
+       FROM registrations r
+       JOIN tournaments t ON r.tournament_id = t.tournament_id
+       WHERE r.user_id = ? AND r.tournament_id = ? AND r.status = 'draft'`,
+      [req.user.id, req.params.tournamentId]
+    );
+
+    if (registrations.length === 0) {
+      return res.status(404).json({ message: 'No draft found' });
+    }
+
+    const registration = registrations[0];
+
+    // Get selected areas
+    const [areas] = await pool.query(
+      `SELECT s.area_id, a.area_number, a.price, z.zone_name, z.zone_number, p.pond_name, p.pond_id
+       FROM area_selections s
+       JOIN areas a ON s.area_id = a.area_id
+       JOIN zones z ON a.zone_id = z.zone_id
+       JOIN ponds p ON z.pond_id = p.pond_id
+       WHERE s.registration_id = ?`,
+      [registration.registration_id]
+    );
+
+    registration.selected_areas = areas;
+    registration.area_ids = areas.map(a => a.area_id);
+
+    res.json(registration);
+  } catch (error) {
+    console.error('Get draft error:', error);
+    res.status(500).json({ message: 'Server error fetching draft' });
+  }
+});
+
+// Get user's registrations (excluding drafts)
 router.get('/my-registrations', authenticate, isUser, async (req, res) => {
   try {
     const [registrations] = await pool.query(
@@ -115,7 +267,7 @@ router.get('/my-registrations', authenticate, isUser, async (req, res) => {
         (SELECT COALESCE(SUM(c.weight), 0) FROM catches c WHERE c.registration_id = r.registration_id AND c.approval_status = 'approved') as total_weight
        FROM registrations r
        JOIN tournaments t ON r.tournament_id = t.tournament_id
-       WHERE r.user_id = ?
+       WHERE r.user_id = ? AND r.status != 'draft'
        ORDER BY r.registered_at DESC`,
       [req.user.id]
     );
@@ -124,6 +276,26 @@ router.get('/my-registrations', authenticate, isUser, async (req, res) => {
   } catch (error) {
     console.error('Get registrations error:', error);
     res.status(500).json({ message: 'Server error fetching registrations' });
+  }
+});
+
+// Get user's draft registrations
+router.get('/my-drafts', authenticate, isUser, async (req, res) => {
+  try {
+    const [registrations] = await pool.query(
+      `SELECT r.*, t.name as tournament_name, t.location, t.start_date, t.end_date, t.registration_link,
+        (SELECT COUNT(*) FROM area_selections s WHERE s.registration_id = r.registration_id) as area_count
+       FROM registrations r
+       JOIN tournaments t ON r.tournament_id = t.tournament_id
+       WHERE r.user_id = ? AND r.status = 'draft'
+       ORDER BY r.updated_at DESC`,
+      [req.user.id]
+    );
+
+    res.json(registrations);
+  } catch (error) {
+    console.error('Get drafts error:', error);
+    res.status(500).json({ message: 'Server error fetching drafts' });
   }
 });
 
@@ -169,7 +341,7 @@ router.get('/tournament/:tournamentId', authenticate, isOrganizer, async (req, r
 router.patch('/:id/status', authenticate, isOrganizer, async (req, res) => {
   try {
     const { status } = req.body;
-    const allowedStatuses = ['pending', 'confirmed', 'rejected', 'cancelled'];
+    const allowedStatuses = ['draft', 'pending', 'confirmed', 'rejected', 'cancelled'];
 
     if (!allowedStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });

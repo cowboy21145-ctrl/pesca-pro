@@ -15,6 +15,7 @@ import {
 const UserDashboard = () => {
   const { user } = useAuth();
   const [registrations, setRegistrations] = useState([]);
+  const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalRegistrations: 0,
@@ -25,6 +26,7 @@ const UserDashboard = () => {
 
   useEffect(() => {
     fetchRegistrations();
+    fetchDrafts();
   }, []);
 
   const fetchRegistrations = async () => {
@@ -43,6 +45,15 @@ const UserDashboard = () => {
       console.error('Error fetching registrations:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDrafts = async () => {
+    try {
+      const response = await registrationAPI.getMyDrafts();
+      setDrafts(response.data);
+    } catch (error) {
+      console.error('Error fetching drafts:', error);
     }
   };
 
@@ -102,6 +113,66 @@ const UserDashboard = () => {
           </motion.div>
         ))}
       </div>
+
+      {/* Draft Registrations */}
+      {drafts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="mb-6"
+        >
+          <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6">Continue Registration</h2>
+          <div className="grid gap-4">
+            {drafts.map((draft) => (
+              <Link
+                key={draft.registration_id}
+                to={`/t/${draft.registration_link}`}
+                className="card p-4 md:p-6 hover:shadow-xl transition-all group border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50"
+              >
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
+                  <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center flex-shrink-0">
+                      <ClipboardDocumentListIcon className="w-6 h-6 md:w-7 md:h-7 text-amber-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-sm md:text-base text-slate-800 group-hover:text-amber-600 transition-colors truncate">
+                          {draft.tournament_name}
+                        </h3>
+                        <span className="badge bg-amber-100 text-amber-700 text-xs">Draft</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-sm text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
+                          <span className="whitespace-nowrap">{new Date(draft.start_date).toLocaleDateString()}</span>
+                        </span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="whitespace-nowrap">{draft.area_count || 0} areas selected</span>
+                        {draft.bank_account_no && (
+                          <>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="whitespace-nowrap">Payment info saved</span>
+                          </>
+                        )}
+                      </div>
+                      {draft.updated_at && (
+                        <p className="text-xs text-slate-400 mt-1">
+                          Last saved: {new Date(draft.updated_at).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 md:gap-4 flex-shrink-0 w-full sm:w-auto">
+                    <span className="text-amber-600 font-medium text-sm">Continue →</span>
+                    <ArrowRightIcon className="w-4 h-4 md:w-5 md:h-5 text-amber-600 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Recent Registrations */}
       <motion.div

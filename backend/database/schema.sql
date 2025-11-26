@@ -30,6 +30,7 @@ CREATE TABLE users (
     email VARCHAR(100),
     password VARCHAR(255) NOT NULL,
     bank_account_no VARCHAR(50),
+    bank_name VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_mobile (mobile_no),
@@ -66,6 +67,7 @@ CREATE TABLE tournaments (
     status ENUM('draft', 'active', 'completed', 'cancelled') DEFAULT 'draft',
     description TEXT,
     banner_image VARCHAR(255),
+    payment_details_image VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (organizer_id) REFERENCES organizers(organizer_id) ON DELETE CASCADE,
@@ -126,7 +128,8 @@ CREATE TABLE registrations (
     total_payment DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     payment_receipt VARCHAR(255),
     bank_account_no VARCHAR(50),
-    status ENUM('pending', 'confirmed', 'rejected', 'cancelled') DEFAULT 'pending',
+    bank_name VARCHAR(100),
+    status ENUM('draft', 'pending', 'confirmed', 'rejected', 'cancelled') DEFAULT 'draft',
     notes TEXT,
     registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     confirmed_at TIMESTAMP NULL,
@@ -134,8 +137,7 @@ CREATE TABLE registrations (
     FOREIGN KEY (tournament_id) REFERENCES tournaments(tournament_id) ON DELETE CASCADE,
     INDEX idx_user (user_id),
     INDEX idx_tournament (tournament_id),
-    INDEX idx_status (status),
-    UNIQUE KEY unique_user_tournament (user_id, tournament_id)
+    INDEX idx_status (status)
 );
 
 -- Area Selections Table

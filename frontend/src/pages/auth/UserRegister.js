@@ -21,7 +21,8 @@ const UserRegister = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    bank_account_no: ''
+    bank_account_no: '',
+    bank_name: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -162,17 +163,31 @@ const UserRegister = () => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Bank Account (Optional)
-              </label>
-              <div className="relative">
-                <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Bank Name (Optional)
+                </label>
+                <div className="relative">
+                  <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={formData.bank_name}
+                    onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                    className="input-field pl-12"
+                    placeholder="e.g., BCA, Mandiri, BRI"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Bank Account (Optional)
+                </label>
                 <input
                   type="text"
                   value={formData.bank_account_no}
                   onChange={(e) => setFormData({ ...formData, bank_account_no: e.target.value })}
-                  className="input-field pl-12"
+                  className="input-field"
                   placeholder="Bank account number"
                 />
               </div>

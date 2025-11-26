@@ -16,16 +16,19 @@ import {
   UserIcon,
   PhoneIcon,
   LockClosedIcon,
+  BuildingOfficeIcon,
+  EnvelopeIcon,
 } from '@heroicons/react/24/outline';
 
 const PublicRegister = () => {
   const { link } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, isUser, user, loginUser, registerUser, checkMobile } = useAuth();
+  const { isAuthenticated, isUser, isOrganizer, user, loginUser, registerUser, checkMobile, logout } = useAuth();
   
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [step, setStep] = useState(1);
+  // Initialize step based on authentication status - skip auth if already logged in
+  const [step, setStep] = useState(isAuthenticated && isUser ? 2 : 1);
   
   // Auth state
   const [authMode, setAuthMode] = useState('check'); // 'check', 'login', 'register'
@@ -36,19 +39,163 @@ const PublicRegister = () => {
   
   // Selection state
   const [selectedAreas, setSelectedAreas] = useState([]);
+  const [bankName, setBankName] = useState('');
   const [bankAccountNo, setBankAccountNo] = useState('');
   const [receipt, setReceipt] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: false });
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
   useEffect(() => {
     fetchTournament();
   }, [link]);
 
+  // Load draft when tournament is loaded and user is authenticated
+  useEffect(() => {
+    const loadDraft = async () => {
+      if (tournament && isAuthenticated && isUser && !draftLoaded) {
+        try {
+          // Try to load from server first
+          const response = await registrationAPI.getDraft(tournament.tournament_id);
+          const draft = response.data;
+          
+          // Restore form data from draft
+          if (draft.bank_name) setBankName(draft.bank_name);
+          if (draft.bank_account_no) setBankAccountNo(draft.bank_account_no);
+          
+          // Restore selected areas
+          if (draft.selected_areas && draft.selected_areas.length > 0) {
+            const restoredAreas = draft.selected_areas.map(area => ({
+              key: `${area.pond_id}-${area.zone_id}-${area.area_id}`,
+              area_id: area.area_id,
+              area_number: area.area_number,
+              price: area.price,
+              zone_name: area.zone_name,
+              pond_name: area.pond_name
+            }));
+            setSelectedAreas(restoredAreas);
+            toast.success('Draft registration loaded. Continue where you left off!', { duration: 4000 });
+          }
+          
+          setDraftLoaded(true);
+        } catch (error) {
+          // If server draft not found, try localStorage as fallback
+          if (error.response?.status === 404) {
+            const draftKey = `draft_${tournament.tournament_id}`;
+            const localDraft = localStorage.getItem(draftKey);
+            if (localDraft) {
+              try {
+                const draft = JSON.parse(localDraft);
+                if (draft.bankName) setBankName(draft.bankName);
+                if (draft.bankAccountNo) setBankAccountNo(draft.bankAccountNo);
+                if (draft.selectedAreas && draft.selectedAreas.length > 0) {
+                  setSelectedAreas(draft.selectedAreas);
+                  toast.success('Local draft loaded. Your progress was saved!', { duration: 4000 });
+                }
+              } catch (e) {
+                console.error('Error parsing local draft:', e);
+              }
+            }
+          } else {
+            console.error('Error loading draft:', error);
+          }
+          setDraftLoaded(true);
+        }
+      }
+    };
+
+    loadDraft();
+  }, [tournament, isAuthenticated, isUser, draftLoaded]);
+
+  // Auto-save draft when form data changes (debounced)
+  useEffect(() => {
+    if (!isAuthenticated || !isUser || !tournament || step !== 2 || !draftLoaded) return;
+
+    const saveDraft = async () => {
+      try {
+        setSavingDraft(true);
+        const formData = {
+          tournament_id: tournament.tournament_id,
+          bank_name: bankName,
+          bank_account_no: bankAccountNo,
+          area_ids: selectedAreas.length > 0 ? JSON.stringify(selectedAreas.map(a => a.area_id)) : null
+        };
+
+        await registrationAPI.saveDraft(formData);
+        setLastSaved(new Date());
+        
+        // Also save to localStorage as backup
+        const draftKey = `draft_${tournament.tournament_id}`;
+        localStorage.setItem(draftKey, JSON.stringify({
+          bankName,
+          bankAccountNo,
+          selectedAreas,
+          savedAt: new Date().toISOString()
+        }));
+      } catch (error) {
+        console.error('Error saving draft:', error);
+        // Save to localStorage as fallback
+        const draftKey = `draft_${tournament.tournament_id}`;
+        localStorage.setItem(draftKey, JSON.stringify({
+          bankName,
+          bankAccountNo,
+          selectedAreas,
+          savedAt: new Date().toISOString()
+        }));
+      } finally {
+        setSavingDraft(false);
+      }
+    };
+
+    // Debounce auto-save (save 2 seconds after user stops typing)
+    const timeoutId = setTimeout(saveDraft, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [bankName, bankAccountNo, selectedAreas, tournament, isAuthenticated, isUser, step, draftLoaded]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (!tournament?.start_date || !tournament?.tournament_start_time) return;
+
+    const updateCountdown = () => {
+      const startDateTime = new Date(`${tournament.start_date}T${tournament.tournament_start_time || '00:00:00'}`);
+      const now = new Date();
+      const diff = startDateTime - now;
+
+      if (diff <= 0) {
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setCountdown({ days, hours, minutes, seconds, isPast: false });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [tournament]);
+
+  // Skip authentication step if user is already logged in
   useEffect(() => {
     if (isAuthenticated && isUser) {
       setStep(2);
+      // Show welcome message for logged-in users
+      if (user) {
+        toast.success(`Welcome back, ${user.full_name || user.name}! Continue with registration.`, {
+          duration: 3000
+        });
+      }
+    } else {
+      setStep(1);
     }
-  }, [isAuthenticated, isUser]);
+  }, [isAuthenticated, isUser, user]);
 
   const fetchTournament = async () => {
     try {
@@ -137,7 +284,12 @@ const PublicRegister = () => {
   const totalPayment = selectedAreas.reduce((sum, a) => sum + parseFloat(a.price), 0);
 
   const handleSubmit = async () => {
-    if (selectedAreas.length === 0) {
+    // Check if tournament has areas - if so, require area selection
+    const hasAreas = tournament.ponds?.some(pond => 
+      pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
+    );
+
+    if (hasAreas && selectedAreas.length === 0) {
       toast.error('Please select at least one area');
       return;
     }
@@ -154,11 +306,19 @@ const PublicRegister = () => {
     try {
       const formData = new FormData();
       formData.append('tournament_id', tournament.tournament_id);
-      formData.append('area_ids', JSON.stringify(selectedAreas.map(a => a.area_id)));
+      if (selectedAreas.length > 0) {
+        formData.append('area_ids', JSON.stringify(selectedAreas.map(a => a.area_id)));
+      }
+      formData.append('bank_name', bankName);
       formData.append('bank_account_no', bankAccountNo);
       formData.append('payment_receipt', receipt);
 
       await registrationAPI.create(formData);
+      
+      // Clear draft data after successful submission
+      const draftKey = `draft_${tournament.tournament_id}`;
+      localStorage.removeItem(draftKey);
+      
       toast.success('Registration submitted successfully!');
       navigate('/user/registrations');
     } catch (error) {
@@ -172,6 +332,48 @@ const PublicRegister = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-ocean-600 to-ocean-800 flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Check if organizer is logged in - they shouldn't register
+  if (isAuthenticated && isOrganizer) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ocean-600 to-ocean-800 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl p-8 text-center max-w-md shadow-xl"
+        >
+          <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+            <BuildingOfficeIcon className="w-8 h-8 text-amber-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Organizer Account Detected</h2>
+          <p className="text-slate-600 mb-2">
+            You are currently logged in as an organizer account.
+          </p>
+          <p className="text-slate-500 mb-6 text-sm">
+            Please logout to test the custom registration link as a regular user.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => {
+                logout();
+                toast.success('Logged out successfully. You can now test the registration link.');
+                // Refresh to show the registration page
+                setTimeout(() => {
+                  window.location.reload();
+                }, 500);
+              }}
+              className="btn-primary"
+            >
+              Logout & Continue
+            </button>
+            <Link to="/organizer" className="btn-secondary">
+              Go to Dashboard
+            </Link>
+          </div>
+        </motion.div>
       </div>
     );
   }
@@ -207,29 +409,82 @@ const PublicRegister = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl overflow-hidden mb-8 shadow-lg"
+          className="bg-white rounded-2xl overflow-hidden mb-8 shadow-xl"
         >
-          {/* Banner Image */}
+          {/* Banner Image - Full Display */}
           {tournament.banner_image && (
-            <div className="w-full aspect-[3/1] bg-slate-100">
+            <div className="w-full bg-slate-100">
               <img
                 src={getImageUrl(tournament.banner_image)}
                 alt={tournament.name}
-                className="w-full h-full object-cover"
+                className="w-full h-auto max-h-[400px] object-cover"
               />
             </div>
           )}
 
+          {/* Countdown Timer */}
+          {tournament.start_date && tournament.tournament_start_time && !countdown.isPast && (
+            <div className="bg-gradient-to-r from-ocean-600 to-ocean-700 px-4 md:px-6 py-4 md:py-5">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <ClockIcon className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                  <div>
+                    <p className="text-white/90 text-xs md:text-sm font-medium">Tournament Starts In</p>
+                    <p className="text-white text-sm md:text-base">
+                      {new Date(`${tournament.start_date}T${tournament.tournament_start_time}`).toLocaleString('en-MY', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 md:gap-4">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 md:px-4 py-2 md:py-3 text-center min-w-[60px] md:min-w-[80px]">
+                    <div className="text-2xl md:text-3xl font-bold text-white">{countdown.days}</div>
+                    <div className="text-xs md:text-sm text-white/80">Days</div>
+                  </div>
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 md:px-4 py-2 md:py-3 text-center min-w-[60px] md:min-w-[80px]">
+                    <div className="text-2xl md:text-3xl font-bold text-white">{countdown.hours}</div>
+                    <div className="text-xs md:text-sm text-white/80">Hours</div>
+                  </div>
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 md:px-4 py-2 md:py-3 text-center min-w-[60px] md:min-w-[80px]">
+                    <div className="text-2xl md:text-3xl font-bold text-white">{countdown.minutes}</div>
+                    <div className="text-xs md:text-sm text-white/80">Mins</div>
+                  </div>
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 md:px-4 py-2 md:py-3 text-center min-w-[60px] md:min-w-[80px]">
+                    <div className="text-2xl md:text-3xl font-bold text-white">{countdown.seconds}</div>
+                    <div className="text-xs md:text-sm text-white/80">Secs</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="p-4 md:p-6 lg:p-8">
-            <div className="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-ocean-500 to-ocean-600 flex items-center justify-center flex-shrink-0">
+            <div className="flex items-start gap-3 md:gap-4 mb-4 md:mb-6">
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-ocean-500 to-ocean-600 flex items-center justify-center flex-shrink-0 shadow-lg">
                 <TrophyIcon className="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-800 mb-2 md:mb-3 truncate">{tournament.name}</h1>
                 
+                {/* Organizer Info */}
+                {tournament.organizer_name && (
+                  <div className="flex items-center gap-2 mb-3 text-slate-600">
+                    <BuildingOfficeIcon className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm md:text-base font-medium">{tournament.organizer_name}</span>
+                    {tournament.organizer_mobile && (
+                      <span className="text-xs md:text-sm text-slate-500">• {tournament.organizer_mobile}</span>
+                    )}
+                  </div>
+                )}
+                
                 {/* Tournament Info Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 mb-3 md:mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 mb-4 md:mb-5">
                   {tournament.location && (
                     <div className="flex items-center gap-2 text-slate-600">
                       <MapPinIcon className="w-3 h-3 md:w-4 md:h-4 text-slate-400 flex-shrink-0" />
@@ -428,106 +683,248 @@ const PublicRegister = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
+            {/* Show logged-in user info */}
+            {isAuthenticated && isUser && user && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-ocean-500 to-ocean-600 rounded-2xl p-4 md:p-5 mb-6 shadow-lg"
+              >
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <UserIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white/90 text-xs md:text-sm font-medium">Registering as</p>
+                      <p className="text-white font-semibold text-sm md:text-base">{user.full_name || user.name}</p>
+                      {user.mobile_no && (
+                        <p className="text-white/80 text-xs">{user.mobile_no}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {/* Auto-save indicator */}
+                    {savingDraft ? (
+                      <div className="flex items-center gap-2 text-white/80 text-xs">
+                        <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Saving...</span>
+                      </div>
+                    ) : lastSaved ? (
+                      <div className="text-white/70 text-xs">
+                        Saved {new Date(lastSaved).toLocaleTimeString()}
+                      </div>
+                    ) : null}
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Do you want to logout and use a different account?')) {
+                          logout();
+                          setStep(1);
+                          toast.success('Logged out. Please login with a different account.');
+                        }
+                      }}
+                      className="text-white/90 hover:text-white text-xs md:text-sm underline transition-colors"
+                    >
+                      Use different account
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Area Selection */}
               <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white rounded-2xl p-6">
-                  <h2 className="text-xl font-bold text-slate-800 mb-4">Select Fishing Areas</h2>
-                  
-                  {tournament.ponds?.map((pond) => (
-                    <div key={pond.pond_id} className="mb-6 last:mb-0">
-                      <h3 className="font-semibold text-slate-700 mb-3">{pond.pond_name}</h3>
-                      
-                      {pond.zones?.map((zone) => (
-                        <div key={zone.zone_id} className="mb-4">
-                          <div 
-                            className="text-sm font-medium mb-2 flex items-center gap-2"
-                            style={{ color: zone.color }}
-                          >
-                            <div 
-                              className="w-3 h-3 rounded"
-                              style={{ backgroundColor: zone.color }}
-                            />
-                            {zone.zone_name}
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {zone.areas?.map((area) => {
-                              const isSelected = selectedAreas.some(
-                                a => a.area_id === area.area_id
-                              );
-                              return (
-                                <button
-                                  key={area.area_id}
-                                  onClick={() => toggleArea(area, zone, pond)}
-                                  disabled={!area.is_available && !isSelected}
-                                  className={`
-                                    w-16 h-16 rounded-lg flex flex-col items-center justify-center
-                                    text-sm font-medium transition-all border-2
-                                    ${isSelected 
-                                      ? 'bg-ocean-500 border-ocean-500 text-white' 
-                                      : area.is_available
-                                        ? 'bg-white border-slate-200 hover:border-ocean-300'
-                                        : 'bg-slate-100 border-slate-100 text-slate-400 cursor-not-allowed'
-                                    }
-                                  `}
-                                >
-                                  <span className="font-bold">{area.area_number}</span>
-                                  <span className="text-xs">
-                                    {parseFloat(area.price).toLocaleString()}
-                                  </span>
-                                  {isSelected && <CheckIcon className="w-4 h-4 absolute" />}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      ))}
+                {/* Check if tournament has areas */}
+                {tournament.ponds?.some(pond => 
+                  pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
+                ) ? (
+                  <div className="bg-white rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-ocean-500 to-ocean-600 flex items-center justify-center">
+                        <MapPinIcon className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-slate-800">Select Fishing Areas</h2>
+                        <p className="text-sm text-slate-500">Choose your preferred fishing spots</p>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                    
+                    {tournament.ponds?.map((pond) => (
+                      <div key={pond.pond_id} className="mb-6 last:mb-0">
+                        <h3 className="font-semibold text-slate-700 mb-3">{pond.pond_name}</h3>
+                        
+                        {pond.zones?.length > 0 ? (
+                          pond.zones.map((zone) => (
+                            <div key={zone.zone_id} className="mb-4">
+                              <div 
+                                className="text-sm font-medium mb-2 flex items-center gap-2"
+                                style={{ color: zone.color }}
+                              >
+                                <div 
+                                  className="w-3 h-3 rounded"
+                                  style={{ backgroundColor: zone.color }}
+                                />
+                                {zone.zone_name}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {zone.areas?.map((area) => {
+                                  const isSelected = selectedAreas.some(
+                                    a => a.area_id === area.area_id
+                                  );
+                                  return (
+                                    <motion.button
+                                      key={area.area_id}
+                                      onClick={() => toggleArea(area, zone, pond)}
+                                      disabled={!area.is_available && !isSelected}
+                                      className={`
+                                        relative w-16 h-16 rounded-lg flex flex-col items-center justify-center
+                                        text-sm font-medium transition-all border-2 shadow-sm
+                                        ${isSelected 
+                                          ? 'bg-gradient-to-br from-ocean-500 to-ocean-600 border-ocean-500 text-white shadow-lg scale-105' 
+                                          : area.is_available
+                                            ? 'bg-white border-slate-200 hover:border-ocean-400 hover:shadow-md hover:scale-105'
+                                            : 'bg-slate-100 border-slate-100 text-slate-400 cursor-not-allowed opacity-60'
+                                        }
+                                      `}
+                                      whileHover={area.is_available && !isSelected ? { scale: 1.05 } : {}}
+                                      whileTap={area.is_available ? { scale: 0.95 } : {}}
+                                    >
+                                      <span className="font-bold text-base">{area.area_number}</span>
+                                      <span className={`text-xs ${isSelected ? 'text-white/90' : 'text-slate-500'}`}>
+                                        RM {parseFloat(area.price).toLocaleString()}
+                                      </span>
+                                      {isSelected && (
+                                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-forest-500 rounded-full flex items-center justify-center">
+                                          <CheckIcon className="w-3 h-3 text-white" />
+                                        </div>
+                                      )}
+                                    </motion.button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-slate-500 text-sm">No zones configured for this pond</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-forest-500 to-forest-600 flex items-center justify-center">
+                        <TrophyIcon className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-slate-800">Tournament Registration</h2>
+                        <p className="text-sm text-slate-500">General participation</p>
+                      </div>
+                    </div>
+                    <div className="bg-forest-50 border border-forest-200 rounded-xl p-4">
+                      <p className="text-slate-700 text-sm">
+                        This tournament does not require area selection. Please proceed with payment details below to complete your registration.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
               </div>
 
               {/* Summary & Payment */}
               <div className="space-y-6">
                 {/* Selected Areas */}
-                <div className="bg-white rounded-2xl p-6">
-                  <h3 className="font-semibold text-slate-800 mb-4">Selected Areas</h3>
+                <div className="bg-white rounded-2xl p-6 shadow-lg">
+                  <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <TrophyIcon className="w-5 h-5 text-forest-600" />
+                    Registration Summary
+                  </h3>
                   {selectedAreas.length === 0 ? (
-                    <p className="text-slate-500 text-sm">No areas selected yet</p>
+                    <div className="text-center py-4">
+                      <p className="text-slate-500 text-sm">No areas selected yet</p>
+                      {!tournament.ponds?.some(pond => 
+                        pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
+                      ) && (
+                        <p className="text-slate-400 text-xs mt-2">This tournament doesn't require area selection</p>
+                      )}
+                    </div>
                   ) : (
                     <div className="space-y-2 mb-4">
                       {selectedAreas.map((area) => (
-                        <div key={area.key} className="flex justify-between text-sm">
-                          <span>{area.pond_name} - {area.zone_name} - Area {area.area_number}</span>
-                          <span className="font-medium">RM {parseFloat(area.price).toLocaleString()}</span>
+                        <div key={area.key} className="flex justify-between items-center p-2 bg-slate-50 rounded-lg text-sm">
+                          <div className="flex-1 min-w-0">
+                            <span className="font-medium text-slate-800">{area.pond_name}</span>
+                            <span className="text-slate-500"> - {area.zone_name} - Area {area.area_number}</span>
+                          </div>
+                          <span className="font-semibold text-ocean-600 ml-2">RM {parseFloat(area.price).toLocaleString()}</span>
                         </div>
                       ))}
                     </div>
                   )}
-                  <div className="border-t pt-4 flex justify-between">
-                    <span className="font-semibold">Total</span>
-                    <span className="font-bold text-lg">RM {totalPayment.toLocaleString()}</span>
+                  <div className="border-t border-slate-200 pt-4 mt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-slate-700">Total Payment</span>
+                      <span className="font-bold text-xl text-ocean-600">RM {totalPayment.toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Payment */}
-                <div className="bg-white rounded-2xl p-6">
-                  <h3 className="font-semibold text-slate-800 mb-4">Payment Details</h3>
+                <div className="bg-white rounded-2xl p-6 shadow-lg">
+                  <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                    <BanknotesIcon className="w-5 h-5 text-ocean-600" />
+                    Payment Details
+                  </h3>
                   
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
-                        Your Bank Account Number
-                      </label>
-                      <div className="relative">
-                        <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                        <input
-                          type="text"
-                          value={bankAccountNo}
-                          onChange={(e) => setBankAccountNo(e.target.value)}
-                          className="input-field pl-12"
-                          placeholder="Bank account number"
-                        />
+                  <div className="space-y-6">
+                    {/* Payment Details Image from Tournament - Above Bank Fields */}
+                    {tournament.payment_details_image && (
+                      <div className="bg-gradient-to-br from-ocean-50 to-slate-50 rounded-xl p-4 border-2 border-ocean-200">
+                        <h4 className="font-medium text-slate-700 mb-3 text-sm">Organizer Payment Information</h4>
+                        <div className="flex justify-center">
+                          <img
+                            src={getImageUrl(tournament.payment_details_image)}
+                            alt="Payment Details"
+                            className="max-w-full h-auto rounded-lg shadow-md border-2 border-white"
+                          />
+                        </div>
+                        <p className="text-xs text-slate-500 text-center mt-3">
+                          Please transfer to the account shown above
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-slate-700 text-sm">Your Bank Information</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            Bank Name
+                          </label>
+                          <div className="relative">
+                            <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <input
+                              type="text"
+                              value={bankName}
+                              onChange={(e) => setBankName(e.target.value)}
+                              className="input-field pl-12"
+                              placeholder="e.g., BCA, Mandiri, BRI"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            Bank Account Number
+                          </label>
+                          <input
+                            type="text"
+                            value={bankAccountNo}
+                            onChange={(e) => setBankAccountNo(e.target.value)}
+                            className="input-field"
+                            placeholder="Bank account number"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -560,13 +957,27 @@ const PublicRegister = () => {
                 </div>
 
                 {/* Submit */}
-                <button
+                <motion.button
                   onClick={handleSubmit}
-                  disabled={submitting || selectedAreas.length === 0}
-                  className="btn-primary w-full py-4"
+                  disabled={submitting || (tournament.ponds?.some(pond => 
+                    pond.zones?.some(zone => zone.areas && zone.areas.length > 0)
+                  ) && selectedAreas.length === 0)}
+                  className="btn-primary w-full py-4 text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  whileHover={{ scale: submitting ? 1 : 1.02 }}
+                  whileTap={{ scale: submitting ? 1 : 0.98 }}
                 >
-                  {submitting ? 'Submitting...' : 'Submit Registration'}
-                </button>
+                  {submitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Submitting...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <CheckIcon className="w-5 h-5" />
+                      Submit Registration
+                    </span>
+                  )}
+                </motion.button>
               </div>
             </div>
           </motion.div>

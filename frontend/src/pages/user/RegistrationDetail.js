@@ -251,10 +251,18 @@ const RegistrationDetail = () => {
                 </span>
               </div>
               <hr className="my-4" />
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500">Bank Account</span>
-                <span className="font-mono text-sm">{registration.bank_account_no}</span>
-              </div>
+              {registration.bank_name && (
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Bank Name</span>
+                  <span className="font-medium text-sm">{registration.bank_name}</span>
+                </div>
+              )}
+              {registration.bank_account_no && (
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Bank Account</span>
+                  <span className="font-mono text-sm">{registration.bank_account_no}</span>
+                </div>
+              )}
             </div>
 
             {registration.payment_receipt && (
