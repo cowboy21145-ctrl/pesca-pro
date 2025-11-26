@@ -238,22 +238,60 @@ router.post('/draft', authenticate, isUser, [
     if (draftReg.length > 0) {
       // Update existing draft
       registration_id = draftReg[0].registration_id;
-      await connection.query(
-        `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, 
-         pond_id = ?, zone_id = ?, updated_at = CURRENT_TIMESTAMP
-         WHERE registration_id = ?`,
-        [total_payment, bank_account_no || null, bank_name || null, pond_id || null, zone_id || null, registration_id]
+      
+      // Check if pond_id and zone_id columns exist
+      const [columns] = await connection.query(
+        `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
+         WHERE TABLE_SCHEMA = DATABASE() 
+         AND TABLE_NAME = 'registrations' 
+         AND COLUMN_NAME IN ('pond_id', 'zone_id')`
       );
+      const hasPondZoneColumns = columns.length === 2;
+      
+      if (hasPondZoneColumns) {
+        await connection.query(
+          `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, 
+           pond_id = ?, zone_id = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE registration_id = ?`,
+          [total_payment, bank_account_no || null, bank_name || null, pond_id || null, zone_id || null, registration_id]
+        );
+      } else {
+        // Fallback: update without pond_id/zone_id
+        await connection.query(
+          `UPDATE registrations SET total_payment = ?, bank_account_no = ?, bank_name = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE registration_id = ?`,
+          [total_payment, bank_account_no || null, bank_name || null, registration_id]
+        );
+      }
       // Delete old area selections
       await connection.query('DELETE FROM area_selections WHERE registration_id = ?', [registration_id]);
     } else {
       // Create new draft
-      const [regResult] = await connection.query(
-        `INSERT INTO registrations (user_id, tournament_id, total_payment, bank_account_no, bank_name, pond_id, zone_id, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'draft')`,
-        [user_id, tournament_id, total_payment, bank_account_no || null, bank_name || null, pond_id || null, zone_id || null]
+      // Check if pond_id and zone_id columns exist
+      const [columns] = await connection.query(
+        `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
+         WHERE TABLE_SCHEMA = DATABASE() 
+         AND TABLE_NAME = 'registrations' 
+         AND COLUMN_NAME IN ('pond_id', 'zone_id')`
       );
-      registration_id = regResult.insertId;
+      const hasPondZoneColumns = columns.length === 2;
+      
+      if (hasPondZoneColumns) {
+        const [regResult] = await connection.query(
+          `INSERT INTO registrations (user_id, tournament_id, total_payment, bank_account_no, bank_name, pond_id, zone_id, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'draft')`,
+          [user_id, tournament_id, total_payment, bank_account_no || null, bank_name || null, pond_id || null, zone_id || null]
+        );
+        registration_id = regResult.insertId;
+      } else {
+        // Fallback: insert without pond_id/zone_id
+        const [regResult] = await connection.query(
+          `INSERT INTO registrations (user_id, tournament_id, total_payment, bank_account_no, bank_name, status)
+           VALUES (?, ?, ?, ?, ?, 'draft')`,
+          [user_id, tournament_id, total_payment, bank_account_no || null, bank_name || null]
+        );
+        registration_id = regResult.insertId;
+      }
     }
 
     // Add area selections if provided
@@ -278,7 +316,11 @@ router.post('/draft', authenticate, isUser, [
   } catch (error) {
     await connection.rollback();
     console.error('Save draft error:', error);
-    res.status(500).json({ message: 'Server error saving draft' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Server error saving draft',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   } finally {
     connection.release();
   }
@@ -287,17 +329,33 @@ router.post('/draft', authenticate, isUser, [
 // Get draft registration for tournament
 router.get('/draft/:tournamentId', authenticate, isUser, async (req, res) => {
   try {
-    const [registrations] = await pool.query(
-      `SELECT r.*, t.name as tournament_name, t.registration_link, t.structure_type,
+    // Check if pond_id and zone_id columns exist
+    const [columns] = await pool.query(
+      `SELECT COLUMN_NAME FROM information_schema.COLUMNS 
+       WHERE TABLE_SCHEMA = DATABASE() 
+       AND TABLE_NAME = 'registrations' 
+       AND COLUMN_NAME IN ('pond_id', 'zone_id')`
+    );
+    const hasPondZoneColumns = columns.length === 2;
+    
+    let query;
+    if (hasPondZoneColumns) {
+      query = `SELECT r.*, t.name as tournament_name, t.registration_link, t.structure_type,
        p.pond_name, p.price as pond_price,
        z.zone_name, z.price as zone_price
        FROM registrations r
        JOIN tournaments t ON r.tournament_id = t.tournament_id
        LEFT JOIN ponds p ON r.pond_id = p.pond_id
        LEFT JOIN zones z ON r.zone_id = z.zone_id
-       WHERE r.user_id = ? AND r.tournament_id = ? AND r.status = 'draft'`,
-      [req.user.id, req.params.tournamentId]
-    );
+       WHERE r.user_id = ? AND r.tournament_id = ? AND r.status = 'draft'`;
+    } else {
+      query = `SELECT r.*, t.name as tournament_name, t.registration_link, t.structure_type
+       FROM registrations r
+       JOIN tournaments t ON r.tournament_id = t.tournament_id
+       WHERE r.user_id = ? AND r.tournament_id = ? AND r.status = 'draft'`;
+    }
+    
+    const [registrations] = await pool.query(query, [req.user.id, req.params.tournamentId]);
 
     if (registrations.length === 0) {
       return res.status(404).json({ message: 'No draft found' });

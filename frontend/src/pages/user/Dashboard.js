@@ -139,7 +139,7 @@ const UserDashboard = () => {
       </div>
 
       {/* Draft Registrations */}
-      {!draftsLoading && drafts && Array.isArray(drafts) && drafts.length > 0 && (
+      {!draftsLoading && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -147,19 +147,20 @@ const UserDashboard = () => {
           className="mb-6"
         >
           <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6">Continue Registration</h2>
-          <div className="grid gap-4">
-            {drafts.map((draft) => {
-              // Ensure registration_link exists
-              if (!draft.registration_link) {
-                console.warn('Draft missing registration_link:', draft);
-                return null;
-              }
-              return (
-              <Link
-                key={draft.registration_id}
-                to={`/t/${draft.registration_link}`}
-                className="card p-4 md:p-6 hover:shadow-xl transition-all group border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50"
-              >
+          {drafts && Array.isArray(drafts) && drafts.length > 0 ? (
+            <div className="grid gap-4">
+              {drafts.map((draft) => {
+                // Ensure registration_link exists
+                if (!draft.registration_link) {
+                  console.warn('Draft missing registration_link:', draft);
+                  return null;
+                }
+                return (
+                <Link
+                  key={draft.registration_id}
+                  to={`/t/${draft.registration_link}`}
+                  className="card p-4 md:p-6 hover:shadow-xl transition-all group border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50"
+                >
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
                   <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
                     <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center flex-shrink-0">
@@ -197,10 +198,32 @@ const UserDashboard = () => {
                     <span className="text-amber-600 font-medium text-sm">Continue →</span>
                     <ArrowRightIcon className="w-4 h-4 md:w-5 md:h-5 text-amber-600 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                   </div>
-                </div>
-              </Link>
+                  </div>
+                </Link>
               );
             })}
+            </div>
+          ) : (
+            <div className="card p-6 md:p-8 text-center">
+              <ClipboardDocumentListIcon className="w-12 h-12 md:w-16 md:h-16 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500 text-sm md:text-base">No incomplete registrations found</p>
+              <p className="text-slate-400 text-xs md:text-sm mt-2">Start a new tournament registration to see it here</p>
+            </div>
+          )}
+        </motion.div>
+      )}
+      
+      {/* Show loading state for drafts */}
+      {draftsLoading && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6">Continue Registration</h2>
+          <div className="card p-6 md:p-8 text-center">
+            <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-ocean-200 border-t-ocean-600 rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-slate-500 text-sm md:text-base">Loading drafts...</p>
           </div>
         </motion.div>
       )}

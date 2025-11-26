@@ -203,10 +203,16 @@ const PublicRegister = () => {
           formData.pond_id = selectedPond.pond_id;
         }
 
-        await registrationAPI.saveDraft(formData);
-        setLastSaved(new Date());
+        try {
+          await registrationAPI.saveDraft(formData);
+          setLastSaved(new Date());
+        } catch (apiError) {
+          // If API fails, still save to localStorage
+          console.warn('Failed to save draft to server, saving locally:', apiError);
+          // Don't show error toast for auto-save failures
+        }
         
-        // Also save to localStorage as backup
+        // Always save to localStorage as backup (even if API succeeds)
         const draftKey = `draft_${tournament.tournament_id}`;
         localStorage.setItem(draftKey, JSON.stringify({
           bankName,
@@ -218,18 +224,22 @@ const PublicRegister = () => {
           savedAt: new Date().toISOString()
         }));
       } catch (error) {
-        console.error('Error saving draft:', error);
+        console.error('Error in save draft function:', error);
         // Save to localStorage as fallback
         const draftKey = `draft_${tournament.tournament_id}`;
-        localStorage.setItem(draftKey, JSON.stringify({
-          bankName,
-          bankAccountNo,
-          selectedAreas,
-          selectedPond,
-          selectedZone,
-          structureType: tournament?.structure_type || 'pond_zone_area',
-          savedAt: new Date().toISOString()
-        }));
+        try {
+          localStorage.setItem(draftKey, JSON.stringify({
+            bankName,
+            bankAccountNo,
+            selectedAreas,
+            selectedPond,
+            selectedZone,
+            structureType: tournament?.structure_type || 'pond_zone_area',
+            savedAt: new Date().toISOString()
+          }));
+        } catch (storageError) {
+          console.error('Failed to save to localStorage:', storageError);
+        }
       } finally {
         setSavingDraft(false);
       }
@@ -1251,65 +1261,79 @@ const PublicRegister = () => {
                 </div>
 
                 {/* Payment */}
-                <div className="bg-white rounded-2xl p-6 shadow-lg">
-                  <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                    <BanknotesIcon className="w-5 h-5 text-ocean-600" />
+                <div className="bg-white rounded-2xl p-4 md:p-6 shadow-lg">
+                  <h3 className="font-semibold text-slate-800 mb-4 md:mb-6 flex items-center gap-2 text-base md:text-lg">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-ocean-100 flex items-center justify-center flex-shrink-0">
+                      <BanknotesIcon className="w-4 h-4 md:w-5 md:h-5 text-ocean-600" />
+                    </div>
                     Payment Details
                   </h3>
                   
-                  <div className="space-y-6">
-                    {/* Payment Details Image from Tournament - Above Bank Fields */}
-                    {tournament.payment_details_image && (
-                      <div className="bg-gradient-to-br from-ocean-50 to-slate-50 rounded-xl p-4 border-2 border-ocean-200">
-                        <h4 className="font-medium text-slate-700 mb-3 text-sm">Organizer Payment Information</h4>
-                        <div className="flex justify-center">
-                          <img
-                            src={getImageUrl(tournament.payment_details_image)}
-                            alt="Payment Details"
-                            className="max-w-full h-auto rounded-lg shadow-md border-2 border-white"
-                          />
+                  <div className="space-y-5 md:space-y-6">
+                    {/* Organizer Payment Information - Always show */}
+                    <div className="bg-gradient-to-br from-ocean-50 to-slate-50 rounded-xl p-4 md:p-5 border-2 border-ocean-200">
+                      <h4 className="font-medium text-slate-700 mb-3 md:mb-4 text-sm md:text-base">Organizer Payment Information</h4>
+                      {tournament.payment_details_image ? (
+                        <>
+                          <div className="flex justify-center mb-3">
+                            <img
+                              src={getImageUrl(tournament.payment_details_image)}
+                              alt="Payment Details"
+                              className="max-w-full h-auto max-h-[300px] md:max-h-[400px] rounded-lg shadow-md border-2 border-white object-contain"
+                            />
+                          </div>
+                          <p className="text-xs md:text-sm text-slate-600 text-center font-medium">
+                            Please transfer to the account shown above
+                          </p>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-8 md:py-12 bg-white/50 rounded-lg border-2 border-dashed border-ocean-200">
+                          <BanknotesIcon className="w-12 h-12 md:w-16 md:h-16 text-slate-300 mb-3" />
+                          <p className="text-sm md:text-base text-slate-400 font-medium">Payment Details</p>
+                          <p className="text-xs md:text-sm text-slate-400 mt-2 text-center px-4">
+                            Organizer payment information will be displayed here
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-500 text-center mt-3">
-                          Please transfer to the account shown above
-                        </p>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-slate-700 text-sm">Your Bank Information</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Your Bank Information */}
+                    <div className="space-y-3 md:space-y-4">
+                      <h4 className="font-medium text-slate-700 text-sm md:text-base">Your Bank Information</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
                             Bank Name
                           </label>
                           <div className="relative">
-                            <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <BanknotesIcon className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400 flex-shrink-0" />
                             <input
                               type="text"
                               value={bankName}
                               onChange={(e) => setBankName(e.target.value)}
-                              className="input-field pl-12"
+                              className="input-field pl-10 md:pl-12 min-h-[44px] w-full"
                               placeholder="e.g., BCA, Mandiri, BRI"
                             />
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
                             Bank Account Number
                           </label>
                           <input
                             type="text"
                             value={bankAccountNo}
                             onChange={(e) => setBankAccountNo(e.target.value)}
-                            className="input-field"
+                            className="input-field min-h-[44px] w-full"
                             placeholder="Bank account number"
                           />
                         </div>
                       </div>
                     </div>
 
+                    {/* Payment Receipt */}
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                      <label className="block text-sm md:text-base font-medium text-slate-700 mb-2 md:mb-3">
                         Payment Receipt
                       </label>
                       <input
@@ -1321,14 +1345,23 @@ const PublicRegister = () => {
                       />
                       <label
                         htmlFor="receipt-upload"
-                        className="block w-full p-4 border-2 border-dashed border-slate-300 rounded-xl text-center cursor-pointer hover:border-ocean-500 hover:bg-ocean-50 transition-colors"
+                        className="flex flex-col items-center justify-center w-full min-h-[120px] md:min-h-[150px] p-6 md:p-8 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-ocean-500 hover:bg-ocean-50/50 transition-all group"
                       >
                         {receipt ? (
-                          <span className="text-ocean-600 font-medium">{receipt.name}</span>
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg bg-ocean-100 flex items-center justify-center">
+                              <CloudArrowUpIcon className="w-6 h-6 md:w-8 md:h-8 text-ocean-600" />
+                            </div>
+                            <span className="text-ocean-600 font-medium text-sm md:text-base break-all text-center max-w-full px-2">
+                              {receipt.name}
+                            </span>
+                            <span className="text-xs text-slate-500 mt-1">Click to change</span>
+                          </div>
                         ) : (
                           <>
-                            <CloudArrowUpIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                            <span className="text-slate-500 text-sm">Upload receipt image</span>
+                            <CloudArrowUpIcon className="w-10 h-10 md:w-12 md:h-12 text-slate-400 group-hover:text-ocean-500 transition-colors mb-3" />
+                            <span className="text-slate-500 text-sm md:text-base font-medium">Upload receipt image</span>
+                            <span className="text-xs text-slate-400 mt-1">PNG, JPG, or JPEG up to 5MB</span>
                           </>
                         )}
                       </label>
