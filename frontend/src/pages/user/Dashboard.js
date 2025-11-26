@@ -17,6 +17,7 @@ const UserDashboard = () => {
   const [registrations, setRegistrations] = useState([]);
   const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [draftsLoading, setDraftsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalRegistrations: 0,
     confirmedRegistrations: 0,
@@ -28,6 +29,12 @@ const UserDashboard = () => {
     fetchRegistrations();
     fetchDrafts();
   }, []);
+
+  // Debug: Log drafts whenever they change
+  useEffect(() => {
+    console.log('Drafts state updated:', drafts);
+    console.log('Drafts length:', drafts?.length || 0);
+  }, [drafts]);
 
   const fetchRegistrations = async () => {
     try {
@@ -49,11 +56,28 @@ const UserDashboard = () => {
   };
 
   const fetchDrafts = async () => {
+    setDraftsLoading(true);
     try {
       const response = await registrationAPI.getMyDrafts();
-      setDrafts(response.data);
+      console.log('Drafts API response:', response); // Debug log
+      console.log('Drafts data:', response.data); // Debug log
+      
+      // Handle different response structures
+      const draftsData = response?.data || response || [];
+      
+      if (Array.isArray(draftsData)) {
+        console.log('Setting drafts:', draftsData); // Debug log
+        setDrafts(draftsData);
+      } else {
+        console.warn('Drafts data is not an array:', draftsData);
+        setDrafts([]);
+      }
     } catch (error) {
       console.error('Error fetching drafts:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      setDrafts([]); // Ensure drafts is set to empty array on error
+    } finally {
+      setDraftsLoading(false);
     }
   };
 
@@ -115,7 +139,7 @@ const UserDashboard = () => {
       </div>
 
       {/* Draft Registrations */}
-      {drafts.length > 0 && (
+      {!draftsLoading && drafts && Array.isArray(drafts) && drafts.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -124,7 +148,13 @@ const UserDashboard = () => {
         >
           <h2 className="text-lg md:text-xl font-bold text-slate-800 mb-4 md:mb-6">Continue Registration</h2>
           <div className="grid gap-4">
-            {drafts.map((draft) => (
+            {drafts.map((draft) => {
+              // Ensure registration_link exists
+              if (!draft.registration_link) {
+                console.warn('Draft missing registration_link:', draft);
+                return null;
+              }
+              return (
               <Link
                 key={draft.registration_id}
                 to={`/t/${draft.registration_link}`}
@@ -169,7 +199,8 @@ const UserDashboard = () => {
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
       )}

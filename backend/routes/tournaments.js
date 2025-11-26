@@ -29,7 +29,8 @@ router.post('/', authenticate, isOrganizer, upload.fields([
     const { 
       name, location, start_date, end_date, description,
       tournament_start_time, tournament_end_time,
-      registration_start_date, registration_end_date
+      registration_start_date, registration_end_date,
+      structure_type
     } = req.body;
     const organizer_id = req.user.id;
     
@@ -41,12 +42,13 @@ router.post('/', authenticate, isOrganizer, upload.fields([
     const [result] = await pool.query(
       `INSERT INTO tournaments (organizer_id, name, location, start_date, end_date, 
         tournament_start_time, tournament_end_time, registration_start_date, registration_end_date,
-        registration_link, leaderboard_link, description, banner_image, payment_details_image)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        registration_link, leaderboard_link, description, banner_image, payment_details_image, structure_type)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [organizer_id, name, location, start_date, end_date, 
        tournament_start_time || null, tournament_end_time || null,
        registration_start_date || null, registration_end_date || null,
-       registration_link, leaderboard_link, description, banner_image, payment_details_image]
+       registration_link, leaderboard_link, description, banner_image, payment_details_image,
+       structure_type || 'pond_zone_area']
     );
 
     res.status(201).json({
@@ -247,7 +249,8 @@ router.put('/:id', authenticate, isOrganizer, upload.fields([
     const { 
       name, location, start_date, end_date, description,
       tournament_start_time, tournament_end_time,
-      registration_start_date, registration_end_date
+      registration_start_date, registration_end_date,
+      structure_type
     } = req.body;
 
     // Verify ownership
@@ -268,12 +271,12 @@ router.put('/:id', authenticate, isOrganizer, upload.fields([
         name = ?, location = ?, start_date = ?, end_date = ?, 
         tournament_start_time = ?, tournament_end_time = ?,
         registration_start_date = ?, registration_end_date = ?,
-        description = ?, banner_image = ?, payment_details_image = ?
+        description = ?, banner_image = ?, payment_details_image = ?, structure_type = ?
        WHERE tournament_id = ?`,
       [name, location, start_date, end_date, 
        tournament_start_time || null, tournament_end_time || null,
        registration_start_date || null, registration_end_date || null,
-       description, banner_image, payment_details_image, req.params.id]
+       description, banner_image, payment_details_image, structure_type || tournaments[0].structure_type || 'pond_zone_area', req.params.id]
     );
 
     res.json({ message: 'Tournament updated successfully' });

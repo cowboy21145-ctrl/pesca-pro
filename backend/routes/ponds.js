@@ -16,7 +16,7 @@ router.post('/', authenticate, isOrganizer, upload.single('layout_image'), [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { tournament_id, pond_name, description } = req.body;
+    const { tournament_id, pond_name, description, price } = req.body;
 
     // Verify tournament ownership
     const [tournaments] = await pool.query(
@@ -29,10 +29,11 @@ router.post('/', authenticate, isOrganizer, upload.single('layout_image'), [
     }
 
     const layout_image = req.file ? `/uploads/layouts/${req.file.filename}` : null;
+    const pondPrice = price ? parseFloat(price) : 0.00;
 
     const [result] = await pool.query(
-      'INSERT INTO ponds (tournament_id, pond_name, layout_image, description) VALUES (?, ?, ?, ?)',
-      [tournament_id, pond_name, layout_image, description]
+      'INSERT INTO ponds (tournament_id, pond_name, layout_image, description, price) VALUES (?, ?, ?, ?, ?)',
+      [tournament_id, pond_name, layout_image, description, pondPrice]
     );
 
     res.status(201).json({
@@ -115,7 +116,7 @@ router.get('/:id/full', async (req, res) => {
 // Update pond
 router.put('/:id', authenticate, isOrganizer, upload.single('layout_image'), async (req, res) => {
   try {
-    const { pond_name, description } = req.body;
+    const { pond_name, description, price } = req.body;
 
     // Verify ownership through tournament
     const [ponds] = await pool.query(
@@ -130,10 +131,11 @@ router.put('/:id', authenticate, isOrganizer, upload.single('layout_image'), asy
     }
 
     const layout_image = req.file ? `/uploads/layouts/${req.file.filename}` : ponds[0].layout_image;
+    const pondPrice = price !== undefined ? parseFloat(price) : ponds[0].price;
 
     await pool.query(
-      'UPDATE ponds SET pond_name = ?, description = ?, layout_image = ? WHERE pond_id = ?',
-      [pond_name, description, layout_image, req.params.id]
+      'UPDATE ponds SET pond_name = ?, description = ?, layout_image = ?, price = ? WHERE pond_id = ?',
+      [pond_name, description, layout_image, pondPrice, req.params.id]
     );
 
     res.json({ message: 'Pond updated successfully' });

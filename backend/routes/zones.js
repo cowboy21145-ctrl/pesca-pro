@@ -16,7 +16,7 @@ router.post('/', authenticate, isOrganizer, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { pond_id, zone_name, zone_number, color } = req.body;
+    const { pond_id, zone_name, zone_number, color, price } = req.body;
 
     // Verify pond ownership
     const [ponds] = await pool.query(
@@ -30,9 +30,11 @@ router.post('/', authenticate, isOrganizer, [
       return res.status(404).json({ message: 'Pond not found or unauthorized' });
     }
 
+    const zonePrice = price ? parseFloat(price) : 0.00;
+
     const [result] = await pool.query(
-      'INSERT INTO zones (pond_id, zone_name, zone_number, color) VALUES (?, ?, ?, ?)',
-      [pond_id, zone_name, zone_number, color || '#3B82F6']
+      'INSERT INTO zones (pond_id, zone_name, zone_number, color, price) VALUES (?, ?, ?, ?, ?)',
+      [pond_id, zone_name, zone_number, color || '#3B82F6', zonePrice]
     );
 
     res.status(201).json({
@@ -77,7 +79,7 @@ router.get('/pond/:pondId', authenticate, async (req, res) => {
 // Update zone
 router.put('/:id', authenticate, isOrganizer, async (req, res) => {
   try {
-    const { zone_name, zone_number, color } = req.body;
+    const { zone_name, zone_number, color, price } = req.body;
 
     // Verify ownership
     const [zones] = await pool.query(
@@ -92,9 +94,11 @@ router.put('/:id', authenticate, isOrganizer, async (req, res) => {
       return res.status(404).json({ message: 'Zone not found or unauthorized' });
     }
 
+    const zonePrice = price !== undefined ? parseFloat(price) : zones[0].price;
+
     await pool.query(
-      'UPDATE zones SET zone_name = ?, zone_number = ?, color = ? WHERE zone_id = ?',
-      [zone_name, zone_number, color, req.params.id]
+      'UPDATE zones SET zone_name = ?, zone_number = ?, color = ?, price = ? WHERE zone_id = ?',
+      [zone_name, zone_number, color, zonePrice, req.params.id]
     );
 
     res.json({ message: 'Zone updated successfully' });

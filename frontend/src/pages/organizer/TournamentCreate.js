@@ -28,7 +28,8 @@ const TournamentCreate = () => {
     tournament_end_time: '',
     registration_start_date: '',
     registration_end_date: '',
-    description: ''
+    description: '',
+    structure_type: 'pond_zone_area'
   });
   const [banner, setBanner] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -377,6 +378,63 @@ const TournamentCreate = () => {
                         />
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Tournament Structure */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-3">
+                    Tournament Structure <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-xs text-slate-500 mb-3">
+                    Choose how participants will register: by pond, by zone, or by specific area
+                  </p>
+                  <div className="space-y-3">
+                    <label className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-forest-500 hover:bg-forest-50/50"
+                      style={{ borderColor: formData.structure_type === 'pond_only' ? '#10b981' : '#e2e8f0' }}>
+                      <input
+                        type="radio"
+                        name="structure_type"
+                        value="pond_only"
+                        checked={formData.structure_type === 'pond_only'}
+                        onChange={(e) => setFormData({ ...formData, structure_type: e.target.value })}
+                        className="mt-1 w-4 h-4 text-forest-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-slate-800">Pond Only</div>
+                        <div className="text-xs text-slate-600 mt-1">Participants register by selecting a pond. Set price per pond.</div>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-forest-500 hover:bg-forest-50/50"
+                      style={{ borderColor: formData.structure_type === 'pond_zone' ? '#10b981' : '#e2e8f0' }}>
+                      <input
+                        type="radio"
+                        name="structure_type"
+                        value="pond_zone"
+                        checked={formData.structure_type === 'pond_zone'}
+                        onChange={(e) => setFormData({ ...formData, structure_type: e.target.value })}
+                        className="mt-1 w-4 h-4 text-forest-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-slate-800">Pond + Zone</div>
+                        <div className="text-xs text-slate-600 mt-1">Participants register by selecting a zone within a pond. Set price per zone.</div>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-forest-500 hover:bg-forest-50/50"
+                      style={{ borderColor: formData.structure_type === 'pond_zone_area' ? '#10b981' : '#e2e8f0' }}>
+                      <input
+                        type="radio"
+                        name="structure_type"
+                        value="pond_zone_area"
+                        checked={formData.structure_type === 'pond_zone_area'}
+                        onChange={(e) => setFormData({ ...formData, structure_type: e.target.value })}
+                        className="mt-1 w-4 h-4 text-forest-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-slate-800">Pond + Zone + Area</div>
+                        <div className="text-xs text-slate-600 mt-1">Participants register by selecting specific areas. Set price per area. (Most detailed)</div>
+                      </div>
+                    </label>
                   </div>
                 </div>
 

@@ -23,13 +23,26 @@ router.post('/', authenticate, isUser, upload.single('payment_receipt'), [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { tournament_id, bank_account_no, bank_name, notes } = req.body;
+    const { tournament_id, bank_account_no, bank_name, notes, pond_id, zone_id } = req.body;
     const area_ids = req.body.area_ids 
       ? (typeof req.body.area_ids === 'string' ? JSON.parse(req.body.area_ids) : req.body.area_ids)
       : [];
     const user_id = req.user.id;
 
     await connection.beginTransaction();
+
+    // Get tournament structure type
+    const [tournaments] = await connection.query(
+      'SELECT structure_type FROM tournaments WHERE tournament_id = ?',
+      [tournament_id]
+    );
+
+    if (tournaments.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Tournament not found' });
+    }
+
+    const structure_type = tournaments[0].structure_type || 'pond_zone_area';
 
     // Check if already registered (not draft)
     const [existingReg] = await connection.query(
@@ -51,8 +64,8 @@ router.post('/', authenticate, isUser, upload.single('payment_receipt'), [
     let total_payment = 0;
     let areas = [];
 
-    // Only verify areas if they are provided
-    if (area_ids && area_ids.length > 0) {
+    // Calculate payment based on structure type
+    if (structure_type === 'pond_zone_area' && area_ids && area_ids.length > 0) {
       // Verify areas are available
       const [areaResults] = await connection.query(
         `SELECT a.area_id, a.price, a.is_available,
@@ -76,8 +89,29 @@ router.post('/', authenticate, isUser, upload.single('payment_receipt'), [
       }
 
       areas = areaResults;
-      // Calculate total payment
       total_payment = areas.reduce((sum, a) => sum + parseFloat(a.price), 0);
+    } else if (structure_type === 'pond_zone' && zone_id) {
+      // Get zone price
+      const [zones] = await connection.query(
+        'SELECT price FROM zones WHERE zone_id = ?',
+        [zone_id]
+      );
+      if (zones.length === 0) {
+        await connection.rollback();
+        return res.status(400).json({ message: 'Zone not found' });
+      }
+      total_payment = parseFloat(zones[0].price);
+    } else if (structure_type === 'pond_only' && pond_id) {
+      // Get pond price
+      const [ponds] = await connection.query(
+        'SELECT price FROM ponds WHERE pond_id = ?',
+        [pond_id]
+      );
+      if (ponds.length === 0) {
+        await connection.rollback();
+        return res.status(400).json({ message: 'Pond not found' });
+      }
+      total_payment = parseFloat(ponds[0].price);
     }
 
     const payment_receipt = req.file ? `/uploads/receipts/${req.file.filename}` : null;
@@ -105,8 +139,8 @@ router.post('/', authenticate, isUser, upload.single('payment_receipt'), [
       registration_id = regResult.insertId;
     }
 
-    // Create area selections only if areas were selected
-    if (area_ids && area_ids.length > 0) {
+    // Create area selections only if areas were selected (for pond_zone_area structure)
+    if (structure_type === 'pond_zone_area' && area_ids && area_ids.length > 0) {
       const selectionValues = area_ids.map(area_id => [registration_id, area_id]);
       await connection.query(
         'INSERT INTO area_selections (registration_id, area_id) VALUES ?',

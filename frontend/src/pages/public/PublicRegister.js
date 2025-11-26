@@ -156,24 +156,63 @@ const PublicRegister = () => {
 
   // Countdown timer effect
   useEffect(() => {
-    if (!tournament?.start_date || !tournament?.tournament_start_time) return;
+    if (!tournament?.start_date) return;
 
     const updateCountdown = () => {
-      const startDateTime = new Date(`${tournament.start_date}T${tournament.tournament_start_time || '00:00:00'}`);
-      const now = new Date();
-      const diff = startDateTime - now;
+      try {
+        // Handle different date formats from backend
+        let startDateStr = tournament.start_date;
+        
+        // If start_date is already a full datetime string, use it directly
+        if (startDateStr.includes('T') || startDateStr.includes(' ')) {
+          // Already has time component
+          startDateStr = startDateStr.split('T')[0]; // Extract just the date part
+        }
+        
+        // Get time component
+        let timeStr = tournament.tournament_start_time || '00:00:00';
+        
+        // Remove seconds if present (format: HH:MM:SS -> HH:MM)
+        if (timeStr.split(':').length > 2) {
+          timeStr = timeStr.split(':').slice(0, 2).join(':');
+        }
+        
+        // Construct datetime string
+        const dateTimeString = `${startDateStr}T${timeStr}:00`;
+        const startDateTime = new Date(dateTimeString);
+        
+        // Validate date
+        if (isNaN(startDateTime.getTime())) {
+          console.error('Invalid date:', dateTimeString);
+          setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true });
+          return;
+        }
+        
+        const now = new Date();
+        const diff = startDateTime.getTime() - now.getTime();
 
-      if (diff <= 0) {
+        if (diff <= 0 || isNaN(diff)) {
+          setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true });
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24)) || 0;
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) || 0;
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)) || 0;
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000) || 0;
+
+        // Ensure all values are valid numbers
+        setCountdown({ 
+          days: isNaN(days) ? 0 : days, 
+          hours: isNaN(hours) ? 0 : hours, 
+          minutes: isNaN(minutes) ? 0 : minutes, 
+          seconds: isNaN(seconds) ? 0 : seconds, 
+          isPast: false 
+        });
+      } catch (error) {
+        console.error('Error calculating countdown:', error);
         setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, isPast: true });
-        return;
       }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setCountdown({ days, hours, minutes, seconds, isPast: false });
     };
 
     updateCountdown();
@@ -423,7 +462,7 @@ const PublicRegister = () => {
           )}
 
           {/* Countdown Timer */}
-          {tournament.start_date && tournament.tournament_start_time && !countdown.isPast && (
+          {tournament.start_date && !countdown.isPast && (
             <div className="bg-gradient-to-r from-ocean-600 to-ocean-700 px-4 md:px-6 py-4 md:py-5">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -431,32 +470,52 @@ const PublicRegister = () => {
                   <div>
                     <p className="text-white/90 text-xs md:text-sm font-medium">Tournament Starts In</p>
                     <p className="text-white text-sm md:text-base">
-                      {new Date(`${tournament.start_date}T${tournament.tournament_start_time}`).toLocaleString('en-MY', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      {(() => {
+                        try {
+                          const dateStr = tournament.start_date.split('T')[0];
+                          const timeStr = tournament.tournament_start_time || '00:00';
+                          const dateTime = new Date(`${dateStr}T${timeStr}:00`);
+                          if (!isNaN(dateTime.getTime())) {
+                            return dateTime.toLocaleString('en-MY', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            });
+                          }
+                        } catch (e) {
+                          console.error('Error formatting date:', e);
+                        }
+                        return `${tournament.start_date} ${tournament.tournament_start_time || ''}`;
+                      })()}
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-2 md:gap-4">
                   <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 md:px-4 py-2 md:py-3 text-center min-w-[60px] md:min-w-[80px]">
-                    <div className="text-2xl md:text-3xl font-bold text-white">{countdown.days}</div>
+                    <div className="text-2xl md:text-3xl font-bold text-white">
+                      {countdown.days !== undefined && !isNaN(countdown.days) ? countdown.days : 0}
+                    </div>
                     <div className="text-xs md:text-sm text-white/80">Days</div>
                   </div>
                   <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 md:px-4 py-2 md:py-3 text-center min-w-[60px] md:min-w-[80px]">
-                    <div className="text-2xl md:text-3xl font-bold text-white">{countdown.hours}</div>
+                    <div className="text-2xl md:text-3xl font-bold text-white">
+                      {countdown.hours !== undefined && !isNaN(countdown.hours) ? countdown.hours : 0}
+                    </div>
                     <div className="text-xs md:text-sm text-white/80">Hours</div>
                   </div>
                   <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 md:px-4 py-2 md:py-3 text-center min-w-[60px] md:min-w-[80px]">
-                    <div className="text-2xl md:text-3xl font-bold text-white">{countdown.minutes}</div>
+                    <div className="text-2xl md:text-3xl font-bold text-white">
+                      {countdown.minutes !== undefined && !isNaN(countdown.minutes) ? countdown.minutes : 0}
+                    </div>
                     <div className="text-xs md:text-sm text-white/80">Mins</div>
                   </div>
                   <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 md:px-4 py-2 md:py-3 text-center min-w-[60px] md:min-w-[80px]">
-                    <div className="text-2xl md:text-3xl font-bold text-white">{countdown.seconds}</div>
+                    <div className="text-2xl md:text-3xl font-bold text-white">
+                      {countdown.seconds !== undefined && !isNaN(countdown.seconds) ? countdown.seconds : 0}
+                    </div>
                     <div className="text-xs md:text-sm text-white/80">Secs</div>
                   </div>
                 </div>
